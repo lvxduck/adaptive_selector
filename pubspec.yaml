@@ -1,5 +1,5 @@
 name: adaptive_selector
-description: A new Flutter project.
+description: Simple and robust Selector that adaptive for all platform.
 version: 0.0.1
 homepage: https://github.com/lvxduck/adaptive_selector
 
@@ -14,7 +14,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^2.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
