@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'adaptive_selector.dart';
+import 'adaptive_selector_options_container.dart';
 
 class OverlaySelector<T> extends StatelessWidget {
   const OverlaySelector({
@@ -8,17 +9,15 @@ class OverlaySelector<T> extends StatelessWidget {
     required this.visible,
     required this.width,
     required this.buildItem,
-    required this.loading,
+    required this.selectorValue,
     this.minWidth,
-    required this.options,
   }) : super(key: key);
 
   final bool visible;
-  final List<Option<T>>? options;
   final double? minWidth;
   final double width;
   final Widget Function(Option<T>) buildItem;
-  final bool loading;
+  final ValueNotifier<SelectorValue<T>> selectorValue;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +27,7 @@ class OverlaySelector<T> extends StatelessWidget {
       ),
       opacity: visible ? 1 : 0,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
+        duration: const Duration(milliseconds: 100),
         curve: Curves.easeInOut,
         width: minWidth != null
             ? width < minWidth!
@@ -41,29 +40,9 @@ class OverlaySelector<T> extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
-          child: Stack(
-            children: [
-              ListView.separated(
-                itemCount: options?.length ?? 0,
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                itemBuilder: (_, index) => buildItem(options![index]),
-                separatorBuilder: (_, __) => const SizedBox(),
-              ),
-              if (loading && visible)
-                const SizedBox(
-                  height: 32,
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-              if (!loading && (options?.isEmpty ?? false))
-                SizedBox(
-                  height: visible ? 100 : 0,
-                  child: const Center(
-                    child: Text('No data'),
-                  ),
-                ),
-            ],
+          child: AdaptiveSelectiveOptionsWidget(
+            selectorValue: selectorValue,
+            buildItem: buildItem,
           ),
         ),
       ),

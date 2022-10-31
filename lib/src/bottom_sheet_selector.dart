@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'adaptive_selector.dart';
+import 'adaptive_selector_options_container.dart';
 
-class BottomSheetSelector<T> extends StatefulWidget {
+class BottomSheetSelector<T> extends StatelessWidget {
   const BottomSheetSelector({
     Key? key,
     required this.selectorValue,
@@ -15,21 +16,6 @@ class BottomSheetSelector<T> extends StatefulWidget {
   final Widget Function(Option<T>) buildItem;
   final ValueNotifier<SelectorValue<T>> selectorValue;
   final ValueChanged<String>? onSearch;
-
-  @override
-  State<BottomSheetSelector<T>> createState() => _BottomSheetSelectorState<T>();
-}
-
-class _BottomSheetSelectorState<T> extends State<BottomSheetSelector<T>> {
-  @override
-  void initState() {
-    widget.selectorValue.addListener(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() {});
-      });
-    });
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,38 +34,27 @@ class _BottomSheetSelectorState<T> extends State<BottomSheetSelector<T>> {
           children: [
             const SizedBox(height: 12),
             Text(
-              widget.title,
+              title,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 12),
-            if (widget.onSearch != null)
+            if (onSearch != null)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextFormField(
                   decoration: const InputDecoration(
                     hintText: 'Enter school name',
                   ),
-                  onChanged: widget.onSearch,
+                  onChanged: onSearch,
                 ),
               ),
             Expanded(
-              child: Stack(
-                children: [
-                  ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shrinkWrap: false,
-                    itemCount: widget.selectorValue.value.options?.length ?? 0,
-                    itemBuilder: (_, index) => widget
-                        .buildItem(widget.selectorValue.value.options![index]),
-                  ),
-                  if (widget.selectorValue.value.loading)
-                    const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                ],
+              child: AdaptiveSelectiveOptionsWidget(
+                selectorValue: selectorValue,
+                buildItem: buildItem,
               ),
             ),
             const SizedBox(height: 12),

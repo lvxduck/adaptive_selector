@@ -76,7 +76,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   final textController = TextEditingController();
   final scrollController = ScrollController();
   final key = GlobalKey();
-  late final ValueNotifier<SelectorValue<T>> selectorValue = ValueNotifier(
+  late final ValueNotifier<SelectorValue<T>> selectorNotifier = ValueNotifier(
     SelectorValue(
       options: widget.options,
       selectedOption: widget.value,
@@ -96,13 +96,11 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         });
       }
     }
-    if (widget.bottomSheet) {
-      selectorValue.value = SelectorValue(
-        options: widget.options,
-        selectedOption: selectedOption,
-        loading: widget.loading,
-      );
-    }
+    selectorNotifier.value = SelectorValue(
+      options: widget.options,
+      selectedOption: selectedOption,
+      loading: widget.loading,
+    );
     super.didUpdateWidget(oldWidget);
   }
 
@@ -142,12 +140,11 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           visible: visible,
           width: width,
           minWidth: widget.minWidth,
-          options: widget.options,
+          selectorValue: selectorNotifier,
           buildItem: (item) => _buildItem(item, onTap: () {
             FocusScope.of(context).requestFocus(FocusNode());
             _updateOption(item);
           }),
-          loading: widget.loading,
         ),
         child: Focus(
           onFocusChange: (hasFocus) {
@@ -170,11 +167,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
               fillColor: !widget.enable
                   ? Theme.of(context).colorScheme.onBackground.withOpacity(0.08)
                   : null,
-              contentPadding: const EdgeInsets.only(
-                left: 16,
-                top: 16,
-                bottom: 16,
-              ),
               suffixIcon: widget.loading && !visible
                   ? const SizedBox.square(
                       dimension: 28,
@@ -214,7 +206,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       constraints: const BoxConstraints(maxHeight: 800),
       builder: (_) {
         return BottomSheetSelector<T>(
-          selectorValue: selectorValue,
+          selectorValue: selectorNotifier,
           title: widget.decoration?.hintText ?? 'Selector',
           onSearch: widget.onSearch,
           buildItem: (item) => _buildItem(item, onTap: () {
