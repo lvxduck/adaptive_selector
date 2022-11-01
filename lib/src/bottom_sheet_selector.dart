@@ -20,7 +20,6 @@ class BottomSheetSelector<T> extends StatelessWidget {
       height: MediaQuery.of(context).size.height * 3 / 4 +
           MediaQuery.of(context).viewInsets.bottom,
       margin: EdgeInsets.only(
-        top: 100,
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       decoration: const BoxDecoration(
@@ -50,6 +49,7 @@ class BottomSheetSelector<T> extends StatelessWidget {
                     Icons.search,
                     size: 24,
                   ),
+                  contentPadding: const EdgeInsets.only(right: 16),
                   hintText: decoration?.hintText,
                 ),
                 onChanged: onSearch,

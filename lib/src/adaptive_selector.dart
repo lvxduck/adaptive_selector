@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
@@ -56,6 +58,10 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.initialValue,
     this.bottomSheet = false,
     this.bottomSheetTitle,
+    this.loadingBuilder,
+    this.errorBuilder,
+    this.emptyDataBuilder,
+    this.debounceDuration = const Duration(milliseconds: 500),
   }) : super(key: key);
 
   final bool bottomSheet;
@@ -69,9 +75,15 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final double? minWidth;
   final bool nullable;
   final bool enable;
+  final Duration debounceDuration;
+
+  // builder
   final Widget Function(AdaptiveSelectorOption<T> value, bool isSelected)
       itemBuilder;
   final IndexedWidgetBuilder? separatorBuilder;
+  final WidgetBuilder? loadingBuilder;
+  final WidgetBuilder? errorBuilder;
+  final WidgetBuilder? emptyDataBuilder;
 
   //
   final String? bottomSheetTitle;
@@ -92,8 +104,25 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     ),
   );
 
+  Timer? _timer;
   bool visible = false;
   late AdaptiveSelectorOption<T>? selectedOption = widget.initialValue;
+
+  void debounceSearch(String value) {
+    if (_timer != null) {
+      _timer?.cancel();
+    }
+    _timer = Timer(
+      widget.debounceDuration,
+      () => widget.onSearch?.call(value),
+    );
+  }
+
+  @override
+  void initState() {
+    textController.text = selectedOption?.label ?? '';
+    super.initState();
+  }
 
   @override
   void didUpdateWidget(covariant AdaptiveSelector<T> oldWidget) {
@@ -112,12 +141,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     super.didUpdateWidget(oldWidget);
   }
 
-  @override
-  void initState() {
-    textController.text = selectedOption?.label ?? '';
-    super.initState();
-  }
-
   bool isShowBottom() {
     final box = key.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return true;
@@ -127,6 +150,15 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     }
     return true;
   }
+
+  late Widget optionsWidget = AdaptiveSelectorOptionsWidget<T>(
+    selectorValue: selectorNotifier,
+    loadingBuilder: widget.loadingBuilder,
+    errorBuilder: widget.errorBuilder,
+    emptyDataBuilder: widget.emptyDataBuilder,
+    separatorBuilder: widget.separatorBuilder,
+    buildItem: _buildItem,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -149,13 +181,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           width: width,
           minWidth: widget.minWidth,
           optionsBuilder: (context) {
-            return AdaptiveSelectorOptionsWidget<T>(
-              selectorValue: selectorNotifier,
-              buildItem: (item) => _buildItem(item, onTap: () {
-                FocusScope.of(context).requestFocus(FocusNode());
-                _updateOption(item);
-              }),
-            );
+            return optionsWidget;
           },
         ),
         child: Focus(
@@ -166,7 +192,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           },
           child: TextFormField(
             controller: textController,
-            onChanged: widget.onSearch,
+            onChanged: debounceSearch,
             onTap: () {
               if (widget.bottomSheet) {
                 _showBottomSheetOptions();
@@ -178,6 +204,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
               fillColor: !widget.enable
                   ? Theme.of(context).colorScheme.onBackground.withOpacity(0.08)
                   : null,
+              contentPadding: const EdgeInsets.only(left: 16),
               suffixIcon: widget.loading && !visible
                   ? const SizedBox.square(
                       dimension: 28,
@@ -214,34 +241,38 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height - 100,
+      ),
       builder: (_) {
         return BottomSheetSelector<T>(
-          title: widget.bottomSheetTitle ?? 'Selector',
-          onSearch: widget.onSearch,
+          title: widget.bottomSheetTitle ??
+              widget.decoration?.hintText ??
+              'Selector',
+          onSearch: debounceSearch,
           decoration: widget.decoration,
           optionsBuilder: (context) {
-            return AdaptiveSelectorOptionsWidget<T>(
-              selectorValue: selectorNotifier,
-              buildItem: (item) => _buildItem(item, onTap: () {
-                FocusManager.instance.primaryFocus?.unfocus();
-                _updateOption(item);
-                Navigator.of(context).pop();
-              }),
-            );
+            return optionsWidget;
           },
         );
       },
     );
   }
 
-  Widget _buildItem(
-    AdaptiveSelectorOption<T> option, {
-    required VoidCallback onTap,
-  }) {
+  Widget _buildItem(AdaptiveSelectorOption<T> option) {
     return Material(
       color: Colors.white,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          if (widget.bottomSheet) {
+            FocusManager.instance.primaryFocus?.unfocus();
+            _updateOption(option);
+            Navigator.of(context).pop();
+          } else {
+            FocusScope.of(context).requestFocus(FocusNode());
+            _updateOption(option);
+          }
+        },
         child: widget.itemBuilder(
           option,
           option == selectedOption,

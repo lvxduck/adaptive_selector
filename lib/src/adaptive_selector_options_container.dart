@@ -7,10 +7,18 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
     Key? key,
     required this.selectorValue,
     required this.buildItem,
+    this.separatorBuilder,
+    this.loadingBuilder,
+    this.errorBuilder,
+    this.emptyDataBuilder,
   }) : super(key: key);
 
   final ValueNotifier<SelectorValue<T>> selectorValue;
   final Widget Function(AdaptiveSelectorOption<T>) buildItem;
+  final IndexedWidgetBuilder? separatorBuilder;
+  final WidgetBuilder? loadingBuilder;
+  final WidgetBuilder? errorBuilder;
+  final WidgetBuilder? emptyDataBuilder;
 
   @override
   State<AdaptiveSelectorOptionsWidget<T>> createState() =>
@@ -43,33 +51,36 @@ class _AdaptiveSelectorOptionsWidgetState<T>
     return Stack(
       children: [
         ListView.separated(
-          shrinkWrap: true,
           itemCount: options?.length ?? 0,
           padding: const EdgeInsets.symmetric(vertical: 4),
           itemBuilder: (_, index) => widget.buildItem(options![index]),
-          separatorBuilder: (_, __) => const SizedBox(),
+          separatorBuilder:
+              widget.separatorBuilder ?? (_, __) => const SizedBox(),
         ),
         if (widget.selectorValue.value.loading)
-          const ColoredBox(
-            color: Colors.white38,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
+          widget.loadingBuilder?.call(context) ??
+              const ColoredBox(
+                color: Colors.white38,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
         if (!widget.selectorValue.value.loading && (options?.isEmpty ?? false))
-          const SizedBox(
-            height: 100,
-            child: Center(
-              child: Text('No data'),
-            ),
-          ),
+          widget.emptyDataBuilder?.call(context) ??
+              const SizedBox(
+                height: 100,
+                child: Center(
+                  child: Text('No data'),
+                ),
+              ),
         if (widget.selectorValue.value.error)
-          const SizedBox(
-            height: 100,
-            child: Center(
-              child: Icon(Icons.error),
-            ),
-          ),
+          widget.errorBuilder?.call(context) ??
+              const SizedBox(
+                height: 100,
+                child: Center(
+                  child: Icon(Icons.error),
+                ),
+              ),
       ],
     );
   }
