@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:adaptive_selector/adaptive_selector.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
@@ -65,13 +66,16 @@ class Demo extends StatefulWidget {
 
 class _DemoState extends State<Demo> {
   final options = [
-    Option(label: 'label 1', value: 'value 1'),
-    Option(label: 'label 2', value: 'value 2'),
-    Option(label: 'label 3', value: 'value 3'),
-    Option(label: 'label 4', value: 'value 4'),
+    AdaptiveSelectorOption(label: 'label 1', value: 'value 1'),
+    AdaptiveSelectorOption(label: 'label 2', value: 'value 2'),
+    AdaptiveSelectorOption(label: 'label 3', value: 'value 3'),
+    AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
+    AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
+    AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
+    AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
   ];
 
-  List<Option<String>> asyncOptions = [];
+  List<AdaptiveSelectorOption<String>> asyncOptions = [];
   bool loading = false;
 
   void onSearch(value) async {
@@ -81,8 +85,8 @@ class _DemoState extends State<Demo> {
     await Future.delayed(const Duration(seconds: 1));
     setState(() {
       asyncOptions = List.generate(
-        Random().nextInt(10),
-        (index) => Option(
+        Random().nextInt(10) + 20,
+        (index) => AdaptiveSelectorOption(
           label: 'label $value $index',
           value: 'value $value $index',
         ),
@@ -109,6 +113,51 @@ class _DemoState extends State<Demo> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 6),
+          DropdownSearch<String>(
+            popupProps: PopupProps.modalBottomSheet(
+              showSelectedItems: true,
+              showSearchBox: true,
+              isFilterOnline: true,
+              title: Text(
+                'Select school',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              modalBottomSheetProps: ModalBottomSheetProps(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              searchFieldProps: const TextFieldProps(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+              ),
+            ),
+            asyncItems: (String filter) async {
+              print('filter $filter');
+              await Future.delayed(const Duration(seconds: 1));
+              return [
+                "Brazil",
+                "Italia (Disabled)",
+                "Tunisia",
+                'Canada',
+                "Brazil",
+                "Italia (Disabled)",
+                "Tunisia",
+                'Canada',
+                "Brazil",
+                "Italia (Disabled)",
+                "Tunisia",
+                'Canada'
+              ];
+            },
+            dropdownDecoratorProps: const DropDownDecoratorProps(
+              dropdownSearchDecoration: InputDecoration(
+                labelText: "Menu mode",
+                hintText: "country in menu mode",
+              ),
+            ),
+            onChanged: print,
+          ),
           AdaptiveSelector(
             options: options,
             itemBuilder: (option, isSelected) => SelectorTile(
@@ -147,6 +196,8 @@ class _DemoState extends State<Demo> {
             bottomSheet: true,
             onSearch: onSearch,
             loading: loading,
+            bottomSheetTitle: 'Select school',
+            decoration: const InputDecoration(hintText: 'Select school'),
             itemBuilder: (option, isSelected) => SelectorTile(
               option: option,
               isSelected: isSelected,
@@ -165,7 +216,7 @@ class SelectorTile<T> extends StatelessWidget {
     required this.isSelected,
   }) : super(key: key);
 
-  final Option<T> option;
+  final AdaptiveSelectorOption<T> option;
   final bool isSelected;
 
   @override
@@ -176,7 +227,7 @@ class SelectorTile<T> extends StatelessWidget {
       color: isSelected
           ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
           : null,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
         option.label,
       ),

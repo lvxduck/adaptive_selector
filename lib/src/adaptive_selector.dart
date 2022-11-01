@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
+import 'adaptive_selector_options_container.dart';
 import 'bottom_sheet_selector.dart';
-import 'overlay_selector.dart';
+import 'menu_selector.dart';
 
-class Option<T> {
-  Option({
+class AdaptiveSelectorOption<T> {
+  AdaptiveSelectorOption({
     required this.label,
     required this.value,
   });
@@ -18,7 +19,7 @@ class Option<T> {
 
   @override
   bool operator ==(Object other) {
-    if (other is! Option) return false;
+    if (other is! AdaptiveSelectorOption) return false;
     final item = other;
     return label == item.label && value == item.value;
   }
@@ -29,11 +30,13 @@ class SelectorValue<T> {
     this.options,
     this.selectedOption,
     required this.loading,
+    this.error = false,
   });
 
-  final Option<T>? selectedOption;
+  final AdaptiveSelectorOption<T>? selectedOption;
   final bool loading;
-  final List<Option<T>>? options;
+  final bool error;
+  final List<AdaptiveSelectorOption<T>>? options;
 }
 
 class AdaptiveSelector<T> extends StatefulWidget {
@@ -52,21 +55,26 @@ class AdaptiveSelector<T> extends StatefulWidget {
     required this.itemBuilder,
     this.initialValue,
     this.bottomSheet = false,
+    this.bottomSheetTitle,
   }) : super(key: key);
 
   final bool bottomSheet;
-  final Option<T>? initialValue;
-  final Option<T>? value;
-  final List<Option<T>>? options;
+  final AdaptiveSelectorOption<T>? initialValue;
+  final AdaptiveSelectorOption<T>? value;
+  final List<AdaptiveSelectorOption<T>>? options;
   final ValueChanged<String>? onSearch;
-  final ValueChanged<Option<T>?>? onChange;
+  final ValueChanged<AdaptiveSelectorOption<T>?>? onChange;
   final InputDecoration? decoration;
   final bool loading;
   final double? minWidth;
   final bool nullable;
   final bool enable;
-  final Widget Function(Option<T> value, bool isSelected) itemBuilder;
+  final Widget Function(AdaptiveSelectorOption<T> value, bool isSelected)
+      itemBuilder;
   final IndexedWidgetBuilder? separatorBuilder;
+
+  //
+  final String? bottomSheetTitle;
 
   @override
   State<AdaptiveSelector<T>> createState() => AdaptiveSelectorState<T>();
@@ -85,7 +93,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   );
 
   bool visible = false;
-  late Option<T>? selectedOption = widget.initialValue;
+  late AdaptiveSelectorOption<T>? selectedOption = widget.initialValue;
 
   @override
   void didUpdateWidget(covariant AdaptiveSelector<T> oldWidget) {
@@ -136,15 +144,19 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
                 follower: Alignment.bottomCenter,
                 target: Alignment.topCenter,
               ),
-        portalFollower: OverlaySelector<T>(
+        portalFollower: MenuSelector<T>(
           visible: visible,
           width: width,
           minWidth: widget.minWidth,
-          selectorValue: selectorNotifier,
-          buildItem: (item) => _buildItem(item, onTap: () {
-            FocusScope.of(context).requestFocus(FocusNode());
-            _updateOption(item);
-          }),
+          optionsBuilder: (context) {
+            return AdaptiveSelectorOptionsWidget<T>(
+              selectorValue: selectorNotifier,
+              buildItem: (item) => _buildItem(item, onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+                _updateOption(item);
+              }),
+            );
+          },
         ),
         child: Focus(
           onFocusChange: (hasFocus) {
@@ -163,7 +175,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
             readOnly: widget.bottomSheet || widget.onSearch == null,
             enabled: widget.enable,
             decoration: InputDecoration(
-              hintText: 'Select',
               fillColor: !widget.enable
                   ? Theme.of(context).colorScheme.onBackground.withOpacity(0.08)
                   : null,
@@ -177,7 +188,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
                         ),
                       ),
                     )
-                  : widget.value != null && widget.nullable
+                  : selectedOption != null && widget.nullable
                       ? InkWell(
                           onTap: () {
                             _updateOption(null);
@@ -203,23 +214,30 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      constraints: const BoxConstraints(maxHeight: 800),
       builder: (_) {
         return BottomSheetSelector<T>(
-          selectorValue: selectorNotifier,
-          title: widget.decoration?.hintText ?? 'Selector',
+          title: widget.bottomSheetTitle ?? 'Selector',
           onSearch: widget.onSearch,
-          buildItem: (item) => _buildItem(item, onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-            _updateOption(item);
-            Navigator.of(context).pop();
-          }),
+          decoration: widget.decoration,
+          optionsBuilder: (context) {
+            return AdaptiveSelectorOptionsWidget<T>(
+              selectorValue: selectorNotifier,
+              buildItem: (item) => _buildItem(item, onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                _updateOption(item);
+                Navigator.of(context).pop();
+              }),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildItem(Option<T> option, {required VoidCallback onTap}) {
+  Widget _buildItem(
+    AdaptiveSelectorOption<T> option, {
+    required VoidCallback onTap,
+  }) {
     return Material(
       color: Colors.white,
       child: InkWell(
@@ -232,7 +250,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     );
   }
 
-  void _updateOption(Option<T>? option) {
+  void _updateOption(AdaptiveSelectorOption<T>? option) {
     setState(() {
       selectedOption = option;
     });

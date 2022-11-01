@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 
 import '../adaptive_selector.dart';
 
-class AdaptiveSelectiveOptionsWidget<T> extends StatefulWidget {
-  const AdaptiveSelectiveOptionsWidget({
+class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
+  const AdaptiveSelectorOptionsWidget({
     Key? key,
     required this.selectorValue,
     required this.buildItem,
   }) : super(key: key);
 
   final ValueNotifier<SelectorValue<T>> selectorValue;
-  final Widget Function(Option<T>) buildItem;
+  final Widget Function(AdaptiveSelectorOption<T>) buildItem;
 
   @override
-  State<AdaptiveSelectiveOptionsWidget<T>> createState() =>
-      _AdaptiveSelectiveOptionsWidgetState<T>();
+  State<AdaptiveSelectorOptionsWidget<T>> createState() =>
+      _AdaptiveSelectorOptionsWidgetState<T>();
 }
 
-class _AdaptiveSelectiveOptionsWidgetState<T>
-    extends State<AdaptiveSelectiveOptionsWidget<T>> {
+class _AdaptiveSelectorOptionsWidgetState<T>
+    extends State<AdaptiveSelectorOptionsWidget<T>> {
   @override
   void initState() {
     widget.selectorValue.addListener(onChange);
@@ -43,20 +43,31 @@ class _AdaptiveSelectiveOptionsWidgetState<T>
     return Stack(
       children: [
         ListView.separated(
+          shrinkWrap: true,
           itemCount: options?.length ?? 0,
           padding: const EdgeInsets.symmetric(vertical: 4),
           itemBuilder: (_, index) => widget.buildItem(options![index]),
           separatorBuilder: (_, __) => const SizedBox(),
         ),
         if (widget.selectorValue.value.loading)
-          const Center(
-            child: CircularProgressIndicator(),
+          const ColoredBox(
+            color: Colors.white38,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
           ),
         if (!widget.selectorValue.value.loading && (options?.isEmpty ?? false))
           const SizedBox(
             height: 100,
             child: Center(
               child: Text('No data'),
+            ),
+          ),
+        if (widget.selectorValue.value.error)
+          const SizedBox(
+            height: 100,
+            child: Center(
+              child: Icon(Icons.error),
             ),
           ),
       ],
