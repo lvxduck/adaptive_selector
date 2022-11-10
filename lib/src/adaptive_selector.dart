@@ -62,6 +62,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.errorBuilder,
     this.emptyDataBuilder,
     this.debounceDuration = const Duration(milliseconds: 500),
+    this.maxMenuHeight = 160,
   }) : super(key: key);
 
   final bool bottomSheet;
@@ -76,6 +77,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final bool nullable;
   final bool enable;
   final Duration debounceDuration;
+
+  // menu selector;
+  final double maxMenuHeight;
 
   // builder
   final Widget Function(AdaptiveSelectorOption<T> value, bool isSelected)
@@ -180,6 +184,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           visible: visible,
           width: width,
           minWidth: widget.minWidth,
+          maxHeight: widget.maxMenuHeight,
           optionsBuilder: (context) {
             return optionsWidget;
           },

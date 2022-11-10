@@ -7,12 +7,14 @@ class MenuSelector<T> extends StatelessWidget {
     required this.width,
     required this.optionsBuilder,
     this.minWidth,
+    required this.maxHeight,
   }) : super(key: key);
 
   final bool visible;
   final double? minWidth;
   final double width;
   final WidgetBuilder optionsBuilder;
+  final double maxHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +29,8 @@ class MenuSelector<T> extends StatelessWidget {
                 ? minWidth
                 : width
             : width,
-        // height: visible ? 160 : 0,
         constraints: BoxConstraints(
-          maxHeight: visible ? 160 : 0,
+          maxHeight: visible ? maxHeight : 0,
           minHeight: 0,
         ),
         child: Material(

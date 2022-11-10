@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:adaptive_selector/adaptive_selector.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
@@ -113,51 +112,6 @@ class _DemoState extends State<Demo> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 6),
-          DropdownSearch<String>(
-            popupProps: PopupProps.modalBottomSheet(
-              showSelectedItems: true,
-              showSearchBox: true,
-              isFilterOnline: true,
-              title: Text(
-                'Select school',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              modalBottomSheetProps: ModalBottomSheetProps(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              searchFieldProps: const TextFieldProps(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-              ),
-            ),
-            asyncItems: (String filter) async {
-              print('filter $filter');
-              await Future.delayed(const Duration(seconds: 1));
-              return [
-                "Brazil",
-                "Italia (Disabled)",
-                "Tunisia",
-                'Canada',
-                "Brazil",
-                "Italia (Disabled)",
-                "Tunisia",
-                'Canada',
-                "Brazil",
-                "Italia (Disabled)",
-                "Tunisia",
-                'Canada'
-              ];
-            },
-            dropdownDecoratorProps: const DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                labelText: "Menu mode",
-                hintText: "country in menu mode",
-              ),
-            ),
-            onChanged: print,
-          ),
           AdaptiveSelector(
             options: options,
             itemBuilder: (option, isSelected) => SelectorTile(
@@ -185,6 +139,7 @@ class _DemoState extends State<Demo> {
           AdaptiveSelector(
             options: options,
             bottomSheet: true,
+            decoration: const InputDecoration(hintText: 'Select school'),
             itemBuilder: (option, isSelected) => SelectorTile(
               option: option,
               isSelected: isSelected,
