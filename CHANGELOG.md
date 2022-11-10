@@ -1,3 +1,7 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+* Init package.
+
+## 0.0.2
+
+* EnhanceUI

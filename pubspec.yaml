@@ -1,6 +1,6 @@
 name: adaptive_selector
 description: Simple and robust Selector that adaptive for all platform.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/lvxduck/adaptive_selector
 
 environment:
