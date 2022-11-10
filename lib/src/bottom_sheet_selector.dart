@@ -56,7 +56,18 @@ class BottomSheetSelector<T> extends StatelessWidget {
                 ),
                 onChanged: onSearch,
               ),
+            )
+          else ...[
+            Text(
+              decoration?.hintText ?? 'Select',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.start,
             ),
+            const SizedBox(height: 6),
+          ],
           Expanded(child: optionsBuilder(context)),
         ],
       ),

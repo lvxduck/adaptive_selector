@@ -69,9 +69,9 @@ class _DemoState extends State<Demo> {
     AdaptiveSelectorOption(label: 'label 2', value: 'value 2'),
     AdaptiveSelectorOption(label: 'label 3', value: 'value 3'),
     AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
-    AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
-    AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
-    AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
+    AdaptiveSelectorOption(label: 'label 5', value: 'value 5'),
+    AdaptiveSelectorOption(label: 'label 6', value: 'value 6'),
+    AdaptiveSelectorOption(label: 'label 7', value: 'value 7'),
   ];
 
   List<AdaptiveSelectorOption<String>> asyncOptions = [];
@@ -103,7 +103,7 @@ class _DemoState extends State<Demo> {
         padding: const EdgeInsets.all(32),
         children: [
           Text(
-            'Overlay selector',
+            'Menu selector',
             style: Theme.of(context).textTheme.headline4,
           ),
           const SizedBox(height: 12),
@@ -114,6 +114,7 @@ class _DemoState extends State<Demo> {
           const SizedBox(height: 6),
           AdaptiveSelector(
             options: options,
+            decoration: const InputDecoration(hintText: 'Select school'),
             itemBuilder: (option, isSelected) => SelectorTile(
               option: option,
               isSelected: isSelected,
@@ -125,17 +126,22 @@ class _DemoState extends State<Demo> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 6),
-          // AdaptiveSelector(
-          //   options: asyncOptions,
-          //   itemBuilder: (option, isSelected) => SelectorTile(
-          //     option: option,
-          //     isSelected: isSelected,
-          //   ),
-          //   loading: loading,
-          //   onSearch: onSearch,
-          // ),
+          AdaptiveSelector(
+            options: asyncOptions,
+            decoration: const InputDecoration(hintText: 'Select school'),
+            itemBuilder: (option, isSelected) => SelectorTile(
+              option: option,
+              isSelected: isSelected,
+            ),
+            loading: loading,
+            onSearch: onSearch,
+          ),
           const SizedBox(height: 120),
-          const Text('Bottom selector'),
+          Text(
+            'BottomSheet selector',
+            style: Theme.of(context).textTheme.headline4,
+          ),
+          const SizedBox(height: 12),
           AdaptiveSelector(
             options: options,
             bottomSheet: true,
