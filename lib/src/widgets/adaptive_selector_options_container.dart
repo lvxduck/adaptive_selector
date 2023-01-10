@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../adaptive_selector.dart';
+import '../../adaptive_selector.dart';
+import '../models/adaptive_selector_option.dart';
+import '../models/selector_value.dart';
 
 class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
   const AdaptiveSelectorOptionsWidget({
@@ -51,6 +53,7 @@ class _AdaptiveSelectorOptionsWidgetState<T>
     return Stack(
       children: [
         ListView.separated(
+          shrinkWrap: true,
           itemCount: options?.length ?? 0,
           padding: const EdgeInsets.symmetric(vertical: 4),
           itemBuilder: (_, index) => widget.buildItem(options![index]),

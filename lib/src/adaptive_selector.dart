@@ -1,62 +1,30 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_portal/flutter_portal.dart';
 
-import 'adaptive_selector_options_container.dart';
-import 'bottom_sheet_selector.dart';
-import 'menu_selector.dart';
-
-class AdaptiveSelectorOption<T> {
-  AdaptiveSelectorOption({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final T value;
-
-  @override
-  int get hashCode => Object.hash(label, value);
-
-  @override
-  bool operator ==(Object other) {
-    if (other is! AdaptiveSelectorOption) return false;
-    final item = other;
-    return label == item.label && value == item.value;
-  }
-}
-
-class SelectorValue<T> {
-  SelectorValue({
-    this.options,
-    this.selectedOption,
-    required this.loading,
-    this.error = false,
-  });
-
-  final AdaptiveSelectorOption<T>? selectedOption;
-  final bool loading;
-  final bool error;
-  final List<AdaptiveSelectorOption<T>>? options;
-}
+import 'models/adaptive_selector_option.dart';
+import 'models/selector_type.dart';
+import 'models/selector_value.dart';
+import 'selectors/bottom_sheet_selector.dart';
+import 'selectors/menu_selector.dart';
+import 'widgets/adaptive_selector_options_container.dart';
+import 'widgets/adaptive_selector_tile.dart';
 
 class AdaptiveSelector<T> extends StatefulWidget {
   const AdaptiveSelector({
     Key? key,
-    this.value,
     this.onSearch,
-    this.onChange,
+    this.onChanged,
     this.decoration,
-    this.minWidth,
+    this.minMenuWidth,
     this.loading = false,
     this.nullable = true,
     this.enable = true,
     this.separatorBuilder,
     required this.options,
-    required this.itemBuilder,
+    this.itemBuilder,
     this.initialValue,
-    this.bottomSheet = false,
+    this.type = SelectorType.bottomSheet,
     this.bottomSheetTitle,
     this.loadingBuilder,
     this.errorBuilder,
@@ -65,31 +33,37 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.maxMenuHeight = 160,
   }) : super(key: key);
 
-  final bool bottomSheet;
+  final SelectorType type;
   final AdaptiveSelectorOption<T>? initialValue;
-  final AdaptiveSelectorOption<T>? value;
   final List<AdaptiveSelectorOption<T>>? options;
+
+  // callbacks
   final ValueChanged<String>? onSearch;
-  final ValueChanged<AdaptiveSelectorOption<T>?>? onChange;
-  final InputDecoration? decoration;
-  final bool loading;
-  final double? minWidth;
-  final bool nullable;
-  final bool enable;
-  final Duration debounceDuration;
+  final ValueChanged<AdaptiveSelectorOption<T>?>? onChanged;
 
-  // menu selector;
-  final double maxMenuHeight;
-
-  // builder
-  final Widget Function(AdaptiveSelectorOption<T> value, bool isSelected)
-      itemBuilder;
+  // Widget builder
+  final Widget Function(
+    AdaptiveSelectorOption<T> value,
+    bool isSelected,
+    VoidCallback onTap,
+  )? itemBuilder;
   final IndexedWidgetBuilder? separatorBuilder;
   final WidgetBuilder? loadingBuilder;
   final WidgetBuilder? errorBuilder;
   final WidgetBuilder? emptyDataBuilder;
 
-  //
+  // style
+  final InputDecoration? decoration;
+  final bool loading;
+  final bool nullable;
+  final bool enable;
+  final Duration debounceDuration;
+
+  // for menu selector
+  final double maxMenuHeight;
+  final double? minMenuWidth;
+
+  // for bottom sheet only
   final String? bottomSheetTitle;
 
   @override
@@ -103,7 +77,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   late final ValueNotifier<SelectorValue<T>> selectorNotifier = ValueNotifier(
     SelectorValue(
       options: widget.options,
-      selectedOption: widget.value,
+      selectedOption: widget.initialValue,
       loading: false,
     ),
   );
@@ -130,13 +104,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   @override
   void didUpdateWidget(covariant AdaptiveSelector<T> oldWidget) {
-    if (widget.value != null) {
-      if (widget.value != oldWidget.value) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _updateOption(widget.value);
-        });
-      }
-    }
     selectorNotifier.value = SelectorValue(
       options: widget.options,
       selectedOption: selectedOption,
@@ -145,109 +112,78 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     super.didUpdateWidget(oldWidget);
   }
 
-  bool isShowBottom() {
-    final box = key.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null) return true;
-    final position = box.localToGlobal(Offset.zero);
-    if (position.dy > MediaQuery.of(context).size.height * 2 / 3) {
-      return false;
-    }
-    return true;
-  }
-
   late Widget optionsWidget = AdaptiveSelectorOptionsWidget<T>(
     selectorValue: selectorNotifier,
     loadingBuilder: widget.loadingBuilder,
     errorBuilder: widget.errorBuilder,
     emptyDataBuilder: widget.emptyDataBuilder,
     separatorBuilder: widget.separatorBuilder,
-    buildItem: _buildItem,
+    buildItem: buildItem,
   );
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (_, box) {
-      final width = box.maxWidth;
-      return PortalTarget(
-        key: key,
-        visible: !widget.bottomSheet,
-        anchor: isShowBottom()
-            ? const Aligned(
-                follower: Alignment.topCenter,
-                target: Alignment.bottomCenter,
+    return TextFormField(
+      controller: textController,
+      onChanged: debounceSearch,
+      onTap: () {
+        switch (widget.type) {
+          case SelectorType.bottomSheet:
+            showBottomSheet();
+            break;
+          case SelectorType.menu:
+            showMenu();
+            break;
+        }
+      },
+      readOnly:
+          widget.type == SelectorType.bottomSheet || widget.onSearch == null,
+      enabled: widget.enable,
+      decoration: InputDecoration(
+        fillColor: !widget.enable
+            ? Theme.of(context).colorScheme.onBackground.withOpacity(0.08)
+            : null,
+        contentPadding: const EdgeInsets.only(left: 16),
+        suffixIcon: widget.loading && !visible
+            ? const SizedBox.square(
+                dimension: 28,
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                  ),
+                ),
               )
-            : const Aligned(
-                follower: Alignment.bottomCenter,
-                target: Alignment.topCenter,
-              ),
-        portalFollower: MenuSelector<T>(
-          visible: visible,
-          width: width,
-          minWidth: widget.minWidth,
-          maxHeight: widget.maxMenuHeight,
-          optionsBuilder: (context) {
-            return optionsWidget;
-          },
-        ),
-        child: Focus(
-          onFocusChange: (hasFocus) {
-            setState(() {
-              visible = hasFocus;
-            });
-          },
-          child: TextFormField(
-            controller: textController,
-            onChanged: debounceSearch,
-            onTap: () {
-              if (widget.bottomSheet) {
-                _showBottomSheetOptions();
-              }
-            },
-            readOnly: widget.bottomSheet || widget.onSearch == null,
-            enabled: widget.enable,
-            decoration: InputDecoration(
-              fillColor: !widget.enable
-                  ? Theme.of(context).colorScheme.onBackground.withOpacity(0.08)
-                  : null,
-              contentPadding: const EdgeInsets.only(left: 16),
-              suffixIcon: widget.loading && !visible
-                  ? const SizedBox.square(
-                      dimension: 28,
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                        ),
-                      ),
-                    )
-                  : selectedOption != null && widget.nullable
-                      ? InkWell(
-                          onTap: () {
-                            _updateOption(null);
-                            widget.onSearch?.call('');
-                          },
-                          child: const Icon(Icons.clear),
-                        )
-                      : const Icon(Icons.keyboard_arrow_down),
-            ).copyWith(
-              hintText: widget.decoration?.hintText,
-              prefixIcon: widget.decoration?.prefixIcon,
-              suffixIcon: widget.decoration?.suffixIcon,
-              errorText: widget.decoration?.errorText,
-            ),
-          ),
-        ),
-      );
-    });
+            : selectedOption != null && widget.nullable
+                ? InkWell(
+                    onTap: () {
+                      updateOption(null);
+                      widget.onSearch?.call('');
+                    },
+                    child: const Icon(Icons.clear),
+                  )
+                : const Icon(Icons.keyboard_arrow_down),
+      ).copyWith(
+        hintText: widget.decoration?.hintText,
+        prefixIcon: widget.decoration?.prefixIcon,
+        suffixIcon: widget.decoration?.suffixIcon,
+        errorText: widget.decoration?.errorText,
+      ),
+    );
   }
 
-  void _showBottomSheetOptions() {
+  void showBottomSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      useRootNavigator: true,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height - 100,
+      ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(12),
+        ),
       ),
       builder: (_) {
         return BottomSheetSelector<T>(
@@ -264,33 +200,40 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     );
   }
 
-  Widget _buildItem(AdaptiveSelectorOption<T> option) {
-    return Material(
-      color: Colors.white,
-      child: InkWell(
-        onTap: () {
-          if (widget.bottomSheet) {
-            FocusManager.instance.primaryFocus?.unfocus();
-            _updateOption(option);
-            Navigator.of(context).pop();
-          } else {
-            FocusScope.of(context).requestFocus(FocusNode());
-            _updateOption(option);
-          }
-        },
-        child: widget.itemBuilder(
-          option,
-          option == selectedOption,
-        ),
-      ),
+  void showMenu() {
+    showMenuSelector(
+      context: context,
+      builder: (context) {
+        return MenuSelector(
+          maxHeight: widget.maxMenuHeight,
+          optionsBuilder: (context) {
+            return optionsWidget;
+          },
+        );
+      },
     );
   }
 
-  void _updateOption(AdaptiveSelectorOption<T>? option) {
+  Widget buildItem(AdaptiveSelectorOption<T> option) {
+    onTap() {
+      Navigator.of(context).pop();
+      FocusManager.instance.primaryFocus?.unfocus();
+      updateOption(option);
+    }
+
+    return widget.itemBuilder?.call(option, option == selectedOption, onTap) ??
+        AdaptiveSelectorTile(
+          option: option,
+          isSelected: option == selectedOption,
+          onTap: onTap,
+        );
+  }
+
+  void updateOption(AdaptiveSelectorOption<T>? option) {
     setState(() {
       selectedOption = option;
     });
     textController.text = option?.label ?? '';
-    widget.onChange?.call(option);
+    widget.onChanged?.call(option);
   }
 }

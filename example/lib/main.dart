@@ -102,68 +102,54 @@ class _DemoState extends State<Demo> {
       body: ListView(
         padding: const EdgeInsets.all(32),
         children: [
+          const SizedBox(height: 200),
           Text(
             'Menu selector',
             style: Theme.of(context).textTheme.headline4,
           ),
-          const SizedBox(height: 12),
-          Text(
-            'Simple Data',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 6),
+          const Label('Simple Data'),
           AdaptiveSelector(
             options: options,
+            type: SelectorType.menu,
             decoration: const InputDecoration(hintText: 'Select school'),
-            itemBuilder: (option, isSelected) => SelectorTile(
-              option: option,
-              isSelected: isSelected,
-            ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Async Data',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 6),
+          const Label('Async Data'),
           AdaptiveSelector(
             options: asyncOptions,
+            type: SelectorType.menu,
             decoration: const InputDecoration(hintText: 'Select school'),
-            itemBuilder: (option, isSelected) => SelectorTile(
-              option: option,
-              isSelected: isSelected,
-            ),
             loading: loading,
             onSearch: onSearch,
           ),
-          const SizedBox(height: 120),
-          Text(
-            'BottomSheet selector',
-            style: Theme.of(context).textTheme.headline4,
+          const Label('Selector with min menu width'),
+          Align(
+            child: SizedBox(
+              width: 120,
+              child: AdaptiveSelector(
+                options: asyncOptions,
+                type: SelectorType.menu,
+                minMenuWidth: 300,
+                decoration: const InputDecoration(hintText: 'Select school'),
+                loading: loading,
+                onSearch: onSearch,
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 120),
+          const Label('BottomSheet selector'),
           AdaptiveSelector(
             options: options,
-            bottomSheet: true,
             decoration: const InputDecoration(hintText: 'Select school'),
-            itemBuilder: (option, isSelected) => SelectorTile(
-              option: option,
-              isSelected: isSelected,
-            ),
           ),
           const SizedBox(height: 16),
           AdaptiveSelector(
             options: asyncOptions,
-            bottomSheet: true,
             onSearch: onSearch,
             loading: loading,
             bottomSheetTitle: 'Select school',
             decoration: const InputDecoration(hintText: 'Select school'),
-            itemBuilder: (option, isSelected) => SelectorTile(
-              option: option,
-              isSelected: isSelected,
-            ),
           ),
+          const SizedBox(height: 64),
         ],
       ),
     );
@@ -191,6 +177,26 @@ class SelectorTile<T> extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
         option.label,
+      ),
+    );
+  }
+}
+
+class Label extends StatelessWidget {
+  const Label(
+    this.data, {
+    Key? key,
+  }) : super(key: key);
+
+  final String data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 14, bottom: 6),
+      child: Text(
+        data,
+        style: Theme.of(context).textTheme.titleMedium,
       ),
     );
   }

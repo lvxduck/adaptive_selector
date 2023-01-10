@@ -16,19 +16,9 @@ class BottomSheetSelector<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(MediaQuery.of(context).viewInsets.bottom);
-    return Container(
-      height: MediaQuery.of(context).size.height * 3 / 4 +
-          MediaQuery.of(context).viewInsets.bottom,
-      margin: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(16),
-        ),
-      ),
+    final media = MediaQuery.of(context);
+    return SizedBox(
+      height: media.size.height / 5 * 3 + media.viewInsets.bottom,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

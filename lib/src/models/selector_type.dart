@@ -1,0 +1,1 @@
+enum SelectorType { menu, bottomSheet }
