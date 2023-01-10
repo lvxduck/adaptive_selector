@@ -203,6 +203,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   void showMenu() {
     showMenuSelector(
       context: context,
+      minWidth: widget.minMenuWidth,
       builder: (context) {
         return MenuSelector(
           maxHeight: widget.maxMenuHeight,

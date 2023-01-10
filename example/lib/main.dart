@@ -100,9 +100,10 @@ class _DemoState extends State<Demo> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(24),
         children: [
           const SizedBox(height: 200),
+          // menu selector
           Text(
             'Menu selector',
             style: Theme.of(context).textTheme.headline4,
@@ -122,20 +123,34 @@ class _DemoState extends State<Demo> {
             onSearch: onSearch,
           ),
           const Label('Selector with min menu width'),
-          Align(
-            child: SizedBox(
-              width: 120,
-              child: AdaptiveSelector(
-                options: asyncOptions,
-                type: SelectorType.menu,
-                minMenuWidth: 300,
-                decoration: const InputDecoration(hintText: 'Select school'),
-                loading: loading,
-                onSearch: onSearch,
+          Row(
+            children: [
+              SizedBox(
+                width: 100,
+                child: AdaptiveSelector(
+                  options: asyncOptions,
+                  type: SelectorType.menu,
+                  minMenuWidth: 300,
+                  decoration: const InputDecoration(hintText: 'Select school'),
+                  loading: loading,
+                  onSearch: onSearch,
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AdaptiveSelector(
+                  options: asyncOptions,
+                  type: SelectorType.menu,
+                  minMenuWidth: 160,
+                  decoration: const InputDecoration(hintText: 'Select school'),
+                  loading: loading,
+                  onSearch: onSearch,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 120),
+          // bottomSheet selector
           const Label('BottomSheet selector'),
           AdaptiveSelector(
             options: options,

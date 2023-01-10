@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 Future<T?> showMenuSelector<T>({
   required BuildContext context,
   required WidgetBuilder builder,
+  double? minWidth,
 }) {
   final NavigatorState navigator = Navigator.of(context);
   final textFieldRenderBox = context.findRenderObject() as RenderBox;
@@ -10,6 +11,7 @@ Future<T?> showMenuSelector<T>({
   return navigator.push(
     _OverlayMenuRoute<T>(
       context: context,
+      minWidth: minWidth,
       capturedThemes: InheritedTheme.capture(
         from: context,
         to: navigator.context,
@@ -66,6 +68,7 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
   final CapturedThemes capturedThemes;
   final RelativeRect position;
   final Size textFieldSize;
+  final double? minWidth;
 
   _OverlayMenuRoute({
     required this.context,
@@ -73,6 +76,7 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
     required this.child,
     required this.position,
     required this.textFieldSize,
+    this.minWidth,
   });
 
   @override
@@ -96,9 +100,10 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
       OverlayEntry(
         builder: (context) => CustomSingleChildLayout(
           delegate: _PopupMenuRouteLayout(
-            context,
-            position,
-            textFieldSize,
+            context: context,
+            position: position,
+            textFieldSize: textFieldSize,
+            minWidth: minWidth,
           ),
           child: child,
         ),
@@ -113,12 +118,14 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
   final RelativeRect position;
   final BuildContext context;
   final Size textFieldSize;
+  final double? minWidth;
 
-  _PopupMenuRouteLayout(
-    this.context,
-    this.position,
-    this.textFieldSize,
-  );
+  _PopupMenuRouteLayout({
+    required this.context,
+    required this.position,
+    required this.textFieldSize,
+    this.minWidth,
+  });
 
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
@@ -128,9 +135,11 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
     final safeAreaBottom = MediaQuery.of(context).padding.bottom;
     final totalSafeArea = safeAreaTop + safeAreaBottom;
     final maxHeight = constraints.minHeight - keyBoardHeight - totalSafeArea;
+
+    // todo: calculate size when minWidth too large
     return BoxConstraints.loose(
       Size(
-        parentRenderBox.size.width - position.right - position.left,
+        minWidth ?? parentRenderBox.size.width - position.right - position.left,
         maxHeight,
       ),
     );
@@ -152,6 +161,10 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
     // check if keyboard overlaps selector
     if (y + childSize.height > size.height - keyBoardHeight) {
       y = y - childSize.height - textFieldSize.height;
+    }
+    if (minWidth != null) {
+      x -= (minWidth! - textFieldSize.width) / 2;
+      if (x < 0) x = position.left;
     }
 
     return Offset(x, y);
