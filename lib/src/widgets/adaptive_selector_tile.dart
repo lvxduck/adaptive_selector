@@ -24,22 +24,9 @@ class AdaptiveSelectorTile<T> extends StatelessWidget {
         color: isSelected
             ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
             : null,
+        alignment: Alignment.centerLeft,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                option.label,
-              ),
-            ),
-            const SizedBox(width: 16),
-            if (isSelected)
-              Checkbox(
-                value: isSelected,
-                onChanged: (_) => onTap(),
-              ),
-          ],
-        ),
+        child: Text(option.label),
       ),
     );
   }

@@ -18,12 +18,12 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.decoration,
     this.minMenuWidth,
     this.loading = false,
-    this.nullable = true,
+    this.allowClear = true,
     this.enable = true,
     this.separatorBuilder,
     required this.options,
     this.itemBuilder,
-    this.initialValue,
+    this.initialOption,
     this.type = SelectorType.bottomSheet,
     this.bottomSheetTitle,
     this.loadingBuilder,
@@ -31,17 +31,27 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.emptyDataBuilder,
     this.debounceDuration = const Duration(milliseconds: 500),
     this.maxMenuHeight = 160,
+    this.hasMoreData = false,
+    this.onLoadMore,
   }) : super(key: key);
 
   final SelectorType type;
-  final AdaptiveSelectorOption<T>? initialValue;
+
+  /// Initial selected option
+  final AdaptiveSelectorOption<T>? initialOption;
   final List<AdaptiveSelectorOption<T>>? options;
 
   // callbacks
   final ValueChanged<String>? onSearch;
   final ValueChanged<AdaptiveSelectorOption<T>?>? onChanged;
 
+  /// Using for loading infinity page
+  final VoidCallback? onLoadMore;
+
   // Widget builder
+  /// Builder Function for item
+  ///
+  /// Default is AdaptiveSelectorOption widget
   final Widget Function(
     AdaptiveSelectorOption<T> value,
     bool isSelected,
@@ -55,8 +65,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
   // style
   final InputDecoration? decoration;
   final bool loading;
-  final bool nullable;
+  final bool allowClear;
   final bool enable;
+  final bool hasMoreData;
   final Duration debounceDuration;
 
   // for menu selector
@@ -77,14 +88,15 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   late final ValueNotifier<SelectorValue<T>> selectorNotifier = ValueNotifier(
     SelectorValue(
       options: widget.options,
-      selectedOption: widget.initialValue,
+      selectedOption: widget.initialOption,
       loading: false,
+      hasMore: widget.hasMoreData,
     ),
   );
 
   Timer? _timer;
   bool visible = false;
-  late AdaptiveSelectorOption<T>? selectedOption = widget.initialValue;
+  late AdaptiveSelectorOption<T>? selectedOption = widget.initialOption;
 
   void debounceSearch(String value) {
     if (_timer != null) {
@@ -108,6 +120,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       options: widget.options,
       selectedOption: selectedOption,
       loading: widget.loading,
+      hasMore: widget.hasMoreData,
     );
     super.didUpdateWidget(oldWidget);
   }
@@ -118,15 +131,18 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     errorBuilder: widget.errorBuilder,
     emptyDataBuilder: widget.emptyDataBuilder,
     separatorBuilder: widget.separatorBuilder,
+    onLoadMore: widget.onLoadMore,
     buildItem: buildItem,
   );
 
   @override
   Widget build(BuildContext context) {
+    final inputDecoration = widget.decoration ?? const InputDecoration();
     return TextFormField(
       controller: textController,
       onChanged: debounceSearch,
       onTap: () {
+        widget.onSearch?.call('');
         switch (widget.type) {
           case SelectorType.bottomSheet:
             showBottomSheet();
@@ -139,35 +155,18 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       readOnly:
           widget.type == SelectorType.bottomSheet || widget.onSearch == null,
       enabled: widget.enable,
-      decoration: InputDecoration(
-        fillColor: !widget.enable
-            ? Theme.of(context).colorScheme.onBackground.withOpacity(0.08)
-            : null,
-        contentPadding: const EdgeInsets.only(left: 16),
-        suffixIcon: widget.loading && !visible
-            ? const SizedBox.square(
-                dimension: 28,
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                  ),
-                ),
+      decoration: inputDecoration.copyWith(
+        filled: true,
+        fillColor: widget.enable ? inputDecoration.fillColor : Colors.grey[200],
+        suffixIcon: selectedOption != null && widget.allowClear
+            ? InkWell(
+                onTap: () {
+                  updateOption(null);
+                  widget.onSearch?.call('');
+                },
+                child: const Icon(Icons.clear),
               )
-            : selectedOption != null && widget.nullable
-                ? InkWell(
-                    onTap: () {
-                      updateOption(null);
-                      widget.onSearch?.call('');
-                    },
-                    child: const Icon(Icons.clear),
-                  )
-                : const Icon(Icons.keyboard_arrow_down),
-      ).copyWith(
-        hintText: widget.decoration?.hintText,
-        prefixIcon: widget.decoration?.prefixIcon,
-        suffixIcon: widget.decoration?.suffixIcon,
-        errorText: widget.decoration?.errorText,
+            : const Icon(Icons.keyboard_arrow_down),
       ),
     );
   }

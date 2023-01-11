@@ -1,8 +1,10 @@
-import 'dart:math';
-
 import 'package:adaptive_selector/adaptive_selector.dart';
+import 'package:example/selectors/basic_usage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+
+import 'selectors/async_value_selector.dart';
+import 'selectors/custom_tile_selector.dart';
 
 void main() {
   runApp(
@@ -21,8 +23,14 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        tabBarTheme: TabBarTheme(
+          unselectedLabelColor: Colors.grey[600]!,
+          labelColor: Colors.grey[900]!,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+        ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
+          fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(
@@ -64,107 +72,53 @@ class Demo extends StatefulWidget {
 }
 
 class _DemoState extends State<Demo> {
-  final options = [
-    AdaptiveSelectorOption(label: 'label 1', value: 'value 1'),
-    AdaptiveSelectorOption(label: 'label 2', value: 'value 2'),
-    AdaptiveSelectorOption(label: 'label 3', value: 'value 3'),
-    AdaptiveSelectorOption(label: 'label 4', value: 'value 4'),
-    AdaptiveSelectorOption(label: 'label 5', value: 'value 5'),
-    AdaptiveSelectorOption(label: 'label 6', value: 'value 6'),
-    AdaptiveSelectorOption(label: 'label 7', value: 'value 7'),
-  ];
-
-  List<AdaptiveSelectorOption<String>> asyncOptions = [];
-  bool loading = false;
-
-  void onSearch(value) async {
-    setState(() {
-      loading = true;
-    });
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      asyncOptions = List.generate(
-        Random().nextInt(10) + 20,
-        (index) => AdaptiveSelectorOption(
-          label: 'label $value $index',
-          value: 'value $value $index',
-        ),
-      );
-    });
-    setState(() {
-      loading = false;
-    });
-  }
+  SelectorType selectorType = SelectorType.menu;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
         children: [
-          const SizedBox(height: 200),
-          // menu selector
           Text(
-            'Menu selector',
+            'Adaptive selector',
             style: Theme.of(context).textTheme.headline4,
           ),
-          const Label('Simple Data'),
-          AdaptiveSelector(
-            options: options,
+          const Label('Select selector type'),
+          AdaptiveSelector<SelectorType>(
+            options: SelectorType.values
+                .map(
+                  (e) => AdaptiveSelectorOption(
+                    label: e.name,
+                    value: e,
+                  ),
+                )
+                .toList(),
             type: SelectorType.menu,
-            decoration: const InputDecoration(hintText: 'Select school'),
+            initialOption: AdaptiveSelectorOption(
+              label: SelectorType.menu.name,
+              value: SelectorType.menu,
+            ),
+            allowClear: false,
+            onChanged: (option) {
+              setState(() {
+                selectorType = option!.value;
+              });
+            },
           ),
-          const Label('Async Data'),
-          AdaptiveSelector(
-            options: asyncOptions,
-            type: SelectorType.menu,
-            decoration: const InputDecoration(hintText: 'Select school'),
-            loading: loading,
-            onSearch: onSearch,
+          const Label('Basic Usage'),
+          BasicUsage(
+            selectorType: selectorType,
           ),
-          const Label('Selector with min menu width'),
-          Row(
-            children: [
-              SizedBox(
-                width: 100,
-                child: AdaptiveSelector(
-                  options: asyncOptions,
-                  type: SelectorType.menu,
-                  minMenuWidth: 300,
-                  decoration: const InputDecoration(hintText: 'Select school'),
-                  loading: loading,
-                  onSearch: onSearch,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AdaptiveSelector(
-                  options: asyncOptions,
-                  type: SelectorType.menu,
-                  minMenuWidth: 160,
-                  decoration: const InputDecoration(hintText: 'Select school'),
-                  loading: loading,
-                  onSearch: onSearch,
-                ),
-              ),
-            ],
+          const Label('Search, Infinity list'),
+          AsyncValueSelector(
+            selectorType: selectorType,
           ),
-          const SizedBox(height: 120),
-          // bottomSheet selector
-          const Label('BottomSheet selector'),
-          AdaptiveSelector(
-            options: options,
-            decoration: const InputDecoration(hintText: 'Select school'),
+          const Label('Custom tile'),
+          CustomTileSelector(
+            selectorType: selectorType,
           ),
-          const SizedBox(height: 16),
-          AdaptiveSelector(
-            options: asyncOptions,
-            onSearch: onSearch,
-            loading: loading,
-            bottomSheetTitle: 'Select school',
-            decoration: const InputDecoration(hintText: 'Select school'),
-          ),
-          const SizedBox(height: 64),
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -211,7 +165,10 @@ class Label extends StatelessWidget {
       padding: const EdgeInsets.only(top: 14, bottom: 6),
       child: Text(
         data,
-        style: Theme.of(context).textTheme.titleMedium,
+        style: TextStyle(
+          color: Theme.of(context).primaryColor,
+          fontSize: 16,
+        ),
       ),
     );
   }
