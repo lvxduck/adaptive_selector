@@ -13,6 +13,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
     this.loadingBuilder,
     this.errorBuilder,
     this.emptyDataBuilder,
+    this.onLoadMore,
   }) : super(key: key);
 
   final ValueNotifier<SelectorValue<T>> selectorValue;
@@ -21,6 +22,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
   final WidgetBuilder? loadingBuilder;
   final WidgetBuilder? errorBuilder;
   final WidgetBuilder? emptyDataBuilder;
+  final VoidCallback? onLoadMore;
 
   @override
   State<AdaptiveSelectorOptionsWidget<T>> createState() =>
@@ -43,8 +45,19 @@ class _AdaptiveSelectorOptionsWidgetState<T>
 
   void onChange() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
+  }
+
+  bool handleScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollEndNotification) {
+      if (notification.metrics.extentAfter == 0) {
+        widget.onLoadMore?.call();
+      }
+    }
+    return false;
   }
 
   @override
@@ -52,14 +65,28 @@ class _AdaptiveSelectorOptionsWidgetState<T>
     final options = widget.selectorValue.value.options;
     return Stack(
       children: [
-        ListView.separated(
-          shrinkWrap: true,
-          itemCount: options?.length ?? 0,
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          itemBuilder: (_, index) => widget.buildItem(options![index]),
-          separatorBuilder:
-              widget.separatorBuilder ?? (_, __) => const SizedBox(),
-        ),
+        if (options != null && options.isNotEmpty)
+          NotificationListener<ScrollNotification>(
+            onNotification: handleScrollNotification,
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount:
+                  options.length + (widget.selectorValue.value.hasMore ? 1 : 0),
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemBuilder: (_, index) {
+                if (index == options.length) {
+                  return Container(
+                    height: 64,
+                    alignment: Alignment.center,
+                    child: const CircularProgressIndicator(),
+                  );
+                }
+                return widget.buildItem(options[index]);
+              },
+              separatorBuilder:
+                  widget.separatorBuilder ?? (_, __) => const SizedBox(),
+            ),
+          ),
         if (widget.selectorValue.value.loading)
           widget.loadingBuilder?.call(context) ??
               const ColoredBox(
