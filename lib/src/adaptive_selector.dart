@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'adaptive_selector_controller.dart';
 import 'models/adaptive_selector_option.dart';
 import 'models/selector_type.dart';
-import 'models/selector_value.dart';
 import 'selectors/bottom_sheet_selector.dart';
 import 'selectors/menu_selector.dart';
+import 'widgets/adaptive_selector_multiple_field.dart';
 import 'widgets/adaptive_selector_options_container.dart';
 import 'widgets/adaptive_selector_tile.dart';
 
@@ -20,12 +21,12 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.loading = false,
     this.allowClear = true,
     this.enable = true,
-    this.separatorBuilder,
     required this.options,
     this.itemBuilder,
     this.initialOption,
     this.type = SelectorType.bottomSheet,
     this.bottomSheetTitle,
+    this.separatorBuilder,
     this.loadingBuilder,
     this.errorBuilder,
     this.emptyDataBuilder,
@@ -33,12 +34,16 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.maxMenuHeight = 160,
     this.hasMoreData = false,
     this.onLoadMore,
+    this.initialOptions,
+    this.isMultiple = false,
   }) : super(key: key);
 
   final SelectorType type;
+  final bool isMultiple;
 
   /// Initial selected option
   final AdaptiveSelectorOption<T>? initialOption;
+  final List<AdaptiveSelectorOption<T>>? initialOptions;
   final List<AdaptiveSelectorOption<T>>? options;
 
   // callbacks
@@ -83,20 +88,22 @@ class AdaptiveSelector<T> extends StatefulWidget {
 
 class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   final textController = TextEditingController();
-  final scrollController = ScrollController();
-  final key = GlobalKey();
-  late final ValueNotifier<SelectorValue<T>> selectorNotifier = ValueNotifier(
-    SelectorValue(
-      options: widget.options,
-      selectedOption: widget.initialOption,
-      loading: false,
-      hasMore: widget.hasMoreData,
-    ),
-  );
-
   Timer? _timer;
-  bool visible = false;
-  late AdaptiveSelectorOption<T>? selectedOption = widget.initialOption;
+
+  List<AdaptiveSelectorOption<T>> get initialOptions => [
+        if (widget.isMultiple)
+          ...?widget.initialOptions
+        else if (widget.initialOption != null)
+          widget.initialOption!,
+      ];
+
+  late final controller = AdaptiveSelectorController<T>(
+    options: widget.options ?? [],
+    selectedOptions: initialOptions,
+    loading: false,
+    hasMore: widget.hasMoreData,
+    isMultiple: widget.isMultiple,
+  );
 
   void debounceSearch(String value) {
     if (_timer != null) {
@@ -110,23 +117,25 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   @override
   void initState() {
-    textController.text = selectedOption?.label ?? '';
+    if (!widget.isMultiple) {
+      textController.text = widget.initialOption?.label ?? '';
+    }
     super.initState();
   }
 
   @override
   void didUpdateWidget(covariant AdaptiveSelector<T> oldWidget) {
-    selectorNotifier.value = SelectorValue(
-      options: widget.options,
-      selectedOption: selectedOption,
+    controller.update(
+      options: widget.options ?? [],
       loading: widget.loading,
       hasMore: widget.hasMoreData,
+      error: false,
     );
     super.didUpdateWidget(oldWidget);
   }
 
   late Widget optionsWidget = AdaptiveSelectorOptionsWidget<T>(
-    selectorValue: selectorNotifier,
+    controller: controller,
     loadingBuilder: widget.loadingBuilder,
     errorBuilder: widget.errorBuilder,
     emptyDataBuilder: widget.emptyDataBuilder,
@@ -135,10 +144,22 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     buildItem: buildItem,
   );
 
+  void showSelector() {
+    widget.onSearch?.call('');
+    switch (widget.type) {
+      case SelectorType.bottomSheet:
+        showBottomSheet();
+        break;
+      case SelectorType.menu:
+        showMenu();
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final inputDecoration = widget.decoration ?? const InputDecoration();
-    return TextFormField(
+    final textField = TextFormField(
       controller: textController,
       onChanged: debounceSearch,
       onTap: () {
@@ -158,17 +179,23 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       decoration: inputDecoration.copyWith(
         filled: true,
         fillColor: widget.enable ? inputDecoration.fillColor : Colors.grey[200],
-        suffixIcon: selectedOption != null && widget.allowClear
+        suffixIcon: controller.selectedOptions.isNotEmpty && widget.allowClear
             ? InkWell(
-                onTap: () {
-                  updateOption(null);
-                  widget.onSearch?.call('');
-                },
+                onTap: remoteSelectedOption,
                 child: const Icon(Icons.clear),
               )
             : const Icon(Icons.keyboard_arrow_down),
       ),
     );
+    if (widget.isMultiple) {
+      return MultipleSelectorTextField(
+        onTap: showSelector,
+        decoration: inputDecoration,
+        controller: controller,
+        onSearch: debounceSearch,
+      );
+    }
+    return textField;
   }
 
   void showBottomSheet() {
@@ -217,23 +244,30 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   Widget buildItem(AdaptiveSelectorOption<T> option) {
     onTap() {
       Navigator.of(context).pop();
-      FocusManager.instance.primaryFocus?.unfocus();
-      updateOption(option);
+      if (!widget.isMultiple) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      }
+      addOption(option);
     }
 
-    return widget.itemBuilder?.call(option, option == selectedOption, onTap) ??
+    final isSelected = controller.selectedOptions.contains(option);
+    return widget.itemBuilder?.call(option, isSelected, onTap) ??
         AdaptiveSelectorTile(
           option: option,
-          isSelected: option == selectedOption,
+          isSelected: isSelected,
           onTap: onTap,
         );
   }
 
-  void updateOption(AdaptiveSelectorOption<T>? option) {
-    setState(() {
-      selectedOption = option;
-    });
-    textController.text = option?.label ?? '';
+  void remoteSelectedOption() {
+    controller.clearSelectedOption();
+    textController.text = '';
+    widget.onChanged?.call(null);
+  }
+
+  void addOption(AdaptiveSelectorOption<T> option) {
+    controller.selectOption(option);
+    textController.text = option.label;
     widget.onChanged?.call(option);
   }
 }

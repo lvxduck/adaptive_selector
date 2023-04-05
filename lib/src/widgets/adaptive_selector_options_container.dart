@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../adaptive_selector.dart';
+import '../adaptive_selector_controller.dart';
 import '../models/adaptive_selector_option.dart';
-import '../models/selector_value.dart';
 
 class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
   const AdaptiveSelectorOptionsWidget({
     Key? key,
-    required this.selectorValue,
+    required this.controller,
     required this.buildItem,
     this.separatorBuilder,
     this.loadingBuilder,
@@ -16,7 +16,8 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
     this.onLoadMore,
   }) : super(key: key);
 
-  final ValueNotifier<SelectorValue<T>> selectorValue;
+  final AdaptiveSelectorController<T> controller;
+
   final Widget Function(AdaptiveSelectorOption<T>) buildItem;
   final IndexedWidgetBuilder? separatorBuilder;
   final WidgetBuilder? loadingBuilder;
@@ -33,13 +34,13 @@ class _AdaptiveSelectorOptionsWidgetState<T>
     extends State<AdaptiveSelectorOptionsWidget<T>> {
   @override
   void initState() {
-    widget.selectorValue.addListener(onChange);
+    widget.controller.addListener(onChange);
     super.initState();
   }
 
   @override
   void dispose() {
-    widget.selectorValue.removeListener(onChange);
+    widget.controller.removeListener(onChange);
     super.dispose();
   }
 
@@ -62,16 +63,15 @@ class _AdaptiveSelectorOptionsWidgetState<T>
 
   @override
   Widget build(BuildContext context) {
-    final options = widget.selectorValue.value.options;
+    final options = widget.controller.options;
     return Stack(
       children: [
-        if (options != null && options.isNotEmpty)
+        if (options.isNotEmpty)
           NotificationListener<ScrollNotification>(
             onNotification: handleScrollNotification,
             child: ListView.separated(
               shrinkWrap: true,
-              itemCount:
-                  options.length + (widget.selectorValue.value.hasMore ? 1 : 0),
+              itemCount: options.length + (widget.controller.hasMore ? 1 : 0),
               padding: const EdgeInsets.symmetric(vertical: 4),
               itemBuilder: (_, index) {
                 if (index == options.length) {
@@ -87,7 +87,7 @@ class _AdaptiveSelectorOptionsWidgetState<T>
                   widget.separatorBuilder ?? (_, __) => const SizedBox(),
             ),
           ),
-        if (widget.selectorValue.value.loading)
+        if (widget.controller.loading)
           widget.loadingBuilder?.call(context) ??
               const ColoredBox(
                 color: Colors.white38,
@@ -95,7 +95,7 @@ class _AdaptiveSelectorOptionsWidgetState<T>
                   child: CircularProgressIndicator(),
                 ),
               ),
-        if (!widget.selectorValue.value.loading && (options?.isEmpty ?? false))
+        if (!widget.controller.loading && options.isEmpty)
           widget.emptyDataBuilder?.call(context) ??
               const SizedBox(
                 height: 100,
@@ -103,7 +103,7 @@ class _AdaptiveSelectorOptionsWidgetState<T>
                   child: Text('No data'),
                 ),
               ),
-        if (widget.selectorValue.value.error)
+        if (widget.controller.error)
           widget.errorBuilder?.call(context) ??
               const SizedBox(
                 height: 100,

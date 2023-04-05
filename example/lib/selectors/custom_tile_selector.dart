@@ -48,10 +48,25 @@ class _CustomTileSelectorState extends State<CustomTileSelector> {
           options: options,
           type: widget.selectorType,
           initialOption: options.first,
+          maxMenuHeight: 500,
           decoration: InputDecoration(
             hintText: 'Select job',
             prefixIcon: const Icon(Icons.person),
             fillColor: Colors.green.withOpacity(0.2),
+          ),
+        ),
+        const SizedBox(height: 12),
+        AdaptiveSelector<Person>(
+          options: options,
+          type: widget.selectorType,
+          initialOptions: options,
+          isMultiple: true,
+          maxMenuHeight: 320,
+          decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 4,
+            ),
           ),
         ),
       ],
