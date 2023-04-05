@@ -71,14 +71,29 @@ class _AsyncValueSelectorState extends State<AsyncValueSelector> {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveSelector(
-      options: userOptions,
-      type: widget.selectorType,
-      decoration: const InputDecoration(hintText: 'Select school'),
-      loading: loading,
-      onSearch: handleSearch,
-      hasMoreData: hasMoreData,
-      onLoadMore: handleLoadMore,
+    return Column(
+      children: [
+        AdaptiveSelector(
+          options: userOptions,
+          type: widget.selectorType,
+          decoration: const InputDecoration(hintText: 'Select school'),
+          loading: loading,
+          onSearch: handleSearch,
+          hasMoreData: hasMoreData,
+          onLoadMore: handleLoadMore,
+        ),
+        const SizedBox(height: 12),
+        AdaptiveSelector<Person>(
+          options: userOptions,
+          type: widget.selectorType,
+          isMultiple: true,
+          maxMenuHeight: 320,
+          onSearch: handleSearch,
+          loading: loading,
+          hasMoreData: hasMoreData,
+          onLoadMore: handleLoadMore,
+        ),
+      ],
     );
   }
 }

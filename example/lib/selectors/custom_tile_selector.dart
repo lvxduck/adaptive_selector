@@ -62,12 +62,6 @@ class _CustomTileSelectorState extends State<CustomTileSelector> {
           initialOptions: options,
           isMultiple: true,
           maxMenuHeight: 320,
-          decoration: const InputDecoration(
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 4,
-            ),
-          ),
         ),
       ],
     );

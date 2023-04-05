@@ -16,6 +16,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     Key? key,
     this.onSearch,
     this.onChanged,
+    this.onMultipleChanged,
     this.decoration,
     this.minMenuWidth,
     this.loading = false,
@@ -49,6 +50,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
   // callbacks
   final ValueChanged<String>? onSearch;
   final ValueChanged<AdaptiveSelectorOption<T>?>? onChanged;
+
+  /// For mode multiple
+  final ValueChanged<List<AdaptiveSelectorOption<T>>>? onMultipleChanged;
 
   /// Using for loading infinity page
   final VoidCallback? onLoadMore;
@@ -159,7 +163,16 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   @override
   Widget build(BuildContext context) {
     final inputDecoration = widget.decoration ?? const InputDecoration();
-    final textField = TextFormField(
+    if (widget.isMultiple) {
+      return MultipleSelectorTextField(
+        onTap: showSelector,
+        decoration: inputDecoration,
+        controller: controller,
+        onSearch: debounceSearch,
+        onMultipleChanged: widget.onMultipleChanged,
+      );
+    }
+    return TextFormField(
       controller: textController,
       onChanged: debounceSearch,
       onTap: () {
@@ -187,19 +200,10 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
             : const Icon(Icons.keyboard_arrow_down),
       ),
     );
-    if (widget.isMultiple) {
-      return MultipleSelectorTextField(
-        onTap: showSelector,
-        decoration: inputDecoration,
-        controller: controller,
-        onSearch: debounceSearch,
-      );
-    }
-    return textField;
   }
 
-  void showBottomSheet() {
-    showModalBottomSheet(
+  void showBottomSheet() async {
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
@@ -224,6 +228,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         );
       },
     );
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   void showMenu() {
@@ -243,8 +248,8 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   Widget buildItem(AdaptiveSelectorOption<T> option) {
     onTap() {
-      Navigator.of(context).pop();
       if (!widget.isMultiple) {
+        Navigator.of(context).pop();
         FocusManager.instance.primaryFocus?.unfocus();
       }
       addOption(option);
@@ -268,6 +273,10 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   void addOption(AdaptiveSelectorOption<T> option) {
     controller.selectOption(option);
     textController.text = option.label;
-    widget.onChanged?.call(option);
+    if (widget.isMultiple) {
+      widget.onMultipleChanged?.call(controller.options);
+    } else {
+      widget.onChanged?.call(option);
+    }
   }
 }
