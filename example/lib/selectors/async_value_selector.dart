@@ -92,6 +92,9 @@ class _AsyncValueSelectorState extends State<AsyncValueSelector> {
           loading: loading,
           hasMoreData: hasMoreData,
           onLoadMore: handleLoadMore,
+          onMultipleChanged: (val) {
+            setState(() {});
+          },
         ),
       ],
     );

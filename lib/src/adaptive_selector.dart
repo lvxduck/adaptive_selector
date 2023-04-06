@@ -37,6 +37,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.onLoadMore,
     this.initialOptions,
     this.isMultiple = false,
+    this.fieldBuilder,
   }) : super(key: key);
 
   final SelectorType type;
@@ -66,6 +67,11 @@ class AdaptiveSelector<T> extends StatefulWidget {
     bool isSelected,
     VoidCallback onTap,
   )? itemBuilder;
+  final Widget Function(
+    AdaptiveSelectorController<T> controller,
+    ValueChanged<String>? onSearch,
+    VoidCallback onTap,
+  )? fieldBuilder;
   final IndexedWidgetBuilder? separatorBuilder;
   final WidgetBuilder? loadingBuilder;
   final WidgetBuilder? errorBuilder;
@@ -94,12 +100,12 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   final textController = TextEditingController();
   Timer? _timer;
 
-  List<AdaptiveSelectorOption<T>> get initialOptions => [
+  Set<AdaptiveSelectorOption<T>> get initialOptions => {
         if (widget.isMultiple)
           ...?widget.initialOptions
         else if (widget.initialOption != null)
           widget.initialOption!,
-      ];
+      };
 
   late final controller = AdaptiveSelectorController<T>(
     options: widget.options ?? [],
@@ -124,6 +130,18 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     if (!widget.isMultiple) {
       textController.text = widget.initialOption?.label ?? '';
     }
+    controller.selectedOptionsNotifier.addListener(() {
+      print('jajaja');
+      final options = controller.selectedOptions;
+      if (widget.isMultiple) {
+        widget.onMultipleChanged?.call(options);
+      } else {
+        widget.onChanged?.call(options.isNotEmpty ? options.first : null);
+      }
+      if (!widget.isMultiple) {
+        textController.text = options.isNotEmpty ? options.first.label : '';
+      }
+    });
     super.initState();
   }
 
@@ -164,13 +182,14 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   Widget build(BuildContext context) {
     final inputDecoration = widget.decoration ?? const InputDecoration();
     if (widget.isMultiple) {
-      return MultipleSelectorTextField(
-        onTap: showSelector,
-        decoration: inputDecoration,
-        controller: controller,
-        onSearch: debounceSearch,
-        onMultipleChanged: widget.onMultipleChanged,
-      );
+      return widget.fieldBuilder
+              ?.call(controller, debounceSearch, showSelector) ??
+          MultipleSelectorTextField(
+            onTap: showSelector,
+            decoration: inputDecoration,
+            controller: controller,
+            onSearch: debounceSearch,
+          );
     }
     return TextFormField(
       controller: textController,
@@ -194,7 +213,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         fillColor: widget.enable ? inputDecoration.fillColor : Colors.grey[200],
         suffixIcon: controller.selectedOptions.isNotEmpty && widget.allowClear
             ? InkWell(
-                onTap: remoteSelectedOption,
+                onTap: controller.clearSelectedOption,
                 child: const Icon(Icons.clear),
               )
             : const Icon(Icons.keyboard_arrow_down),
@@ -252,7 +271,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         Navigator.of(context).pop();
         FocusManager.instance.primaryFocus?.unfocus();
       }
-      addOption(option);
+      controller.selectOption(option);
     }
 
     final isSelected = controller.selectedOptions.contains(option);
@@ -262,21 +281,5 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           isSelected: isSelected,
           onTap: onTap,
         );
-  }
-
-  void remoteSelectedOption() {
-    controller.clearSelectedOption();
-    textController.text = '';
-    widget.onChanged?.call(null);
-  }
-
-  void addOption(AdaptiveSelectorOption<T> option) {
-    controller.selectOption(option);
-    textController.text = option.label;
-    if (widget.isMultiple) {
-      widget.onMultipleChanged?.call(controller.options);
-    } else {
-      widget.onChanged?.call(option);
-    }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../adaptive_selector.dart';
 import '../adaptive_selector_controller.dart';
 
 class MultipleSelectorTextField<T> extends StatefulWidget {
@@ -10,21 +9,20 @@ class MultipleSelectorTextField<T> extends StatefulWidget {
     required this.decoration,
     required this.controller,
     this.onSearch,
-    this.onMultipleChanged,
   }) : super(key: key);
 
   final VoidCallback onTap;
   final InputDecoration decoration;
-  final AdaptiveSelectorController controller;
-  final ValueChanged<List<AdaptiveSelectorOption<T>>>? onMultipleChanged;
+  final AdaptiveSelectorController<T> controller;
   final ValueChanged<String>? onSearch;
 
   @override
-  State<MultipleSelectorTextField> createState() =>
+  State<MultipleSelectorTextField<T>> createState() =>
       _MultipleSelectorTextFieldState();
 }
 
-class _MultipleSelectorTextFieldState extends State<MultipleSelectorTextField> {
+class _MultipleSelectorTextFieldState<T>
+    extends State<MultipleSelectorTextField<T>> {
   final focus = FocusNode();
   bool hasFocus = false;
 
@@ -45,9 +43,6 @@ class _MultipleSelectorTextFieldState extends State<MultipleSelectorTextField> {
         setState(() {
           this.hasFocus = hasFocus;
         });
-        // if (hasFocus) {
-        //   widget.onTap();
-        // }
       },
       child: InkWell(
         onTapDown: (_) {
@@ -74,8 +69,6 @@ class _MultipleSelectorTextFieldState extends State<MultipleSelectorTextField> {
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     onDeleted: () {
                       widget.controller.selectOption(e);
-                      widget.onMultipleChanged
-                          ?.call(widget.controller.selectedOptions);
                     },
                   ),
                 )

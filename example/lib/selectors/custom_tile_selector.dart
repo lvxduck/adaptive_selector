@@ -29,6 +29,7 @@ class _CustomTileSelectorState extends State<CustomTileSelector> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AdaptiveSelector<Person>(
           options: options,
@@ -62,6 +63,13 @@ class _CustomTileSelectorState extends State<CustomTileSelector> {
           initialOptions: options,
           isMultiple: true,
           maxMenuHeight: 320,
+          fieldBuilder: (controller, onSearch, onTap) {
+            return CustomField(
+              controller: controller,
+              onTap: onTap,
+              onSearch: onSearch,
+            );
+          },
         ),
       ],
     );
@@ -124,5 +132,83 @@ class PersonSelectorTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class CustomField extends StatelessWidget {
+  const CustomField({
+    Key? key,
+    required this.onTap,
+    required this.controller,
+    this.onSearch,
+  }) : super(key: key);
+
+  final VoidCallback onTap;
+  final AdaptiveSelectorController<Person> controller;
+  final ValueChanged<String>? onSearch;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+        valueListenable: controller.selectedOptionsNotifier,
+        builder: (context, value, _) {
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: controller.selectedOptions
+                .map<Widget>(
+                  (e) => Chip(
+                    label: Text(e.label),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    avatar: const Icon(Icons.person),
+                    side: const BorderSide(),
+                    backgroundColor: Colors.white,
+                    onDeleted: () {
+                      controller.selectOption(e);
+                    },
+                  ),
+                )
+                .toList()
+              ..add(
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        border: Border.all(),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: const Icon(
+                        Icons.person_add_alt_1,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 100,
+                      child: TextField(
+                        onChanged: onSearch,
+                        maxLines: null,
+                        onTap: onTap,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                          filled: false,
+                          hintText: 'Add...',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          );
+        });
   }
 }
