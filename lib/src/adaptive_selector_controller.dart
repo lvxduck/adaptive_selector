@@ -42,7 +42,7 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
   }
 
   void clearSelectedOption() {
-    selectedOptionsNotifier.value.clear();
+    selectedOptionsNotifier.value = {};
     notifyListeners();
   }
 
