@@ -131,7 +131,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       textController.text = widget.initialOption?.label ?? '';
     }
     controller.selectedOptionsNotifier.addListener(() {
-      print('jajaja');
       final options = controller.selectedOptions;
       if (widget.isMultiple) {
         widget.onMultipleChanged?.call(options);

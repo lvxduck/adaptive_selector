@@ -1,3 +1,4 @@
+import 'package:adaptive_selector/src/extensions/context_extension.dart';
 import 'package:flutter/material.dart';
 
 Future<T?> showMenuSelector<T>({
@@ -5,28 +6,14 @@ Future<T?> showMenuSelector<T>({
   required WidgetBuilder builder,
   double? minWidth,
 }) {
-  final NavigatorState navigator = Navigator.of(context);
-  final textFieldRenderBox = context.findRenderObject() as RenderBox;
-  var overlay = Overlay.of(context)!.context.findRenderObject() as RenderBox;
+  final navigator = Navigator.of(context);
   return navigator.push(
     _OverlayMenuRoute<T>(
-      context: context,
+      menuContext: context,
       minWidth: minWidth,
       capturedThemes: InheritedTheme.capture(
         from: context,
         to: navigator.context,
-      ),
-      textFieldSize: textFieldRenderBox.size,
-      position: RelativeRect.fromSize(
-        Rect.fromPoints(
-          textFieldRenderBox.localToGlobal(
-              textFieldRenderBox.size.bottomLeft(Offset.zero),
-              ancestor: overlay),
-          textFieldRenderBox.localToGlobal(
-              textFieldRenderBox.size.bottomRight(Offset.zero),
-              ancestor: overlay),
-        ),
-        Size(overlay.size.width, overlay.size.height),
       ),
       child: builder(context),
     ),
@@ -63,19 +50,15 @@ class MenuSelector<T> extends StatelessWidget {
 
 // todo: use TransitionRoute for animation
 class _OverlayMenuRoute<T> extends OverlayRoute<T> {
-  final BuildContext context;
+  final BuildContext menuContext;
   final Widget child;
   final CapturedThemes capturedThemes;
-  final RelativeRect position;
-  final Size textFieldSize;
   final double? minWidth;
 
   _OverlayMenuRoute({
-    required this.context,
+    required this.menuContext,
     required this.capturedThemes,
     required this.child,
-    required this.position,
-    required this.textFieldSize,
     this.minWidth,
   });
 
@@ -98,15 +81,19 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
         },
       ),
       OverlayEntry(
-        builder: (context) => CustomSingleChildLayout(
-          delegate: _PopupMenuRouteLayout(
-            context: context,
-            position: position,
-            textFieldSize: textFieldSize,
-            minWidth: minWidth,
-          ),
-          child: child,
-        ),
+        maintainState: true,
+        builder: (context) {
+          return CustomSingleChildLayout(
+            delegate: _PopupMenuRouteLayout(
+              context: context,
+              selectorContext: menuContext,
+              position: menuContext.findRelativeRect(),
+              textFieldSize: menuContext.findSize(),
+              minWidth: minWidth,
+            ),
+            child: child,
+          );
+        },
       ),
     ];
   }
@@ -115,13 +102,16 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
 // Positioning of the menu on the screen.
 class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
   // Rectangle of underlying button, relative to the overlay's dimensions.
-  final RelativeRect position;
+  RelativeRect position;
   final BuildContext context;
-  final Size textFieldSize;
+  final BuildContext selectorContext;
+
+  Size textFieldSize;
   final double? minWidth;
 
   _PopupMenuRouteLayout({
     required this.context,
+    required this.selectorContext,
     required this.position,
     required this.textFieldSize,
     this.minWidth,
@@ -136,6 +126,10 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
     final totalSafeArea = safeAreaTop + safeAreaBottom;
     final maxHeight = constraints.minHeight - keyBoardHeight - totalSafeArea;
 
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      position = selectorContext.findRelativeRect();
+      textFieldSize = selectorContext.findSize();
+    });
     // todo: calculate size when minWidth too large
     return BoxConstraints.loose(
       Size(

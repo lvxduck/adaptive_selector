@@ -25,7 +25,6 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
   bool hasMore;
 
   void selectOption(AdaptiveSelectorOption<T> option) {
-    print(option);
     if (isMultiple) {
       if (selectedOptionsNotifier.value.contains(option)) {
         selectedOptionsNotifier.value =
