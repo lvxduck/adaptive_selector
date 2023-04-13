@@ -1,10 +1,9 @@
 import 'package:adaptive_selector/adaptive_selector.dart';
-import 'package:example/selectors/basic_usage.dart';
+import 'package:example/selectors/basic_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
-import 'selectors/async_value_selector.dart';
-import 'selectors/custom_tile_selector.dart';
+import 'selectors/custom_selector.dart';
 
 void main() {
   runApp(
@@ -107,16 +106,16 @@ class _DemoState extends State<Demo> {
               });
             },
           ),
-          const Label('Basic Usage'),
+          const Label('Basic'),
           BasicUsage(
             selectorType: selectorType,
           ),
-          const Label('Search, Infinity list'),
-          AsyncValueSelector(
-            selectorType: selectorType,
-          ),
-          const Label('Custom tile'),
-          CustomTileSelector(
+          // const Label('Search, Infinity list'),
+          // AsyncValueSelector(
+          //   selectorType: selectorType,
+          // ),
+          const Label('Custom'),
+          CustomSelector(
             selectorType: selectorType,
           ),
           const SizedBox(height: 32),

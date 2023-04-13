@@ -2,8 +2,8 @@ import 'package:adaptive_selector/adaptive_selector.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 
-class CustomTileSelector extends StatefulWidget {
-  const CustomTileSelector({
+class CustomSelector extends StatefulWidget {
+  const CustomSelector({
     Key? key,
     required this.selectorType,
   }) : super(key: key);
@@ -11,13 +11,13 @@ class CustomTileSelector extends StatefulWidget {
   final SelectorType selectorType;
 
   @override
-  State<CustomTileSelector> createState() => _CustomTileSelectorState();
+  State<CustomSelector> createState() => _CustomSelectorState();
 }
 
-class _CustomTileSelectorState extends State<CustomTileSelector> {
+class _CustomSelectorState extends State<CustomSelector> {
   final faker = Faker();
 
-  late final options = List.generate(5, (index) => faker.person)
+  late final options = List.generate(10, (index) => faker.person)
       .map(
         (e) => AdaptiveSelectorOption(
           label: e.name(),
@@ -35,7 +35,12 @@ class _CustomTileSelectorState extends State<CustomTileSelector> {
           options: options,
           type: widget.selectorType,
           initialOption: options.first,
-          decoration: const InputDecoration(hintText: 'Select job'),
+          maxMenuHeight: 320,
+          decoration: InputDecoration(
+            hintText: 'Select job',
+            prefixIcon: const Icon(Icons.person),
+            fillColor: Colors.green.withOpacity(0.2),
+          ),
           itemBuilder: (option, selected, onTap) {
             return PersonSelectorTile(
               onTap: onTap,
@@ -44,23 +49,11 @@ class _CustomTileSelectorState extends State<CustomTileSelector> {
             );
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
-          initialOption: options.first,
-          maxMenuHeight: 500,
-          decoration: InputDecoration(
-            hintText: 'Select job',
-            prefixIcon: const Icon(Icons.person),
-            fillColor: Colors.green.withOpacity(0.2),
-          ),
-        ),
-        const SizedBox(height: 12),
-        AdaptiveSelector<Person>(
-          options: options,
-          type: widget.selectorType,
-          initialOptions: options,
+          initialOptions: options.getRange(0, 5).toList(),
           isMultiple: true,
           maxMenuHeight: 320,
           fieldBuilder: (controller, onSearch, onTap) {
@@ -150,65 +143,66 @@ class CustomField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-        valueListenable: controller.selectedOptionsNotifier,
-        builder: (context, value, _) {
-          return Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: controller.selectedOptions
-                .map<Widget>(
-                  (e) => Chip(
-                    label: Text(e.label),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    avatar: const Icon(Icons.person),
-                    side: const BorderSide(),
-                    backgroundColor: Colors.white,
-                    onDeleted: () {
-                      controller.selectOption(e);
-                    },
-                  ),
-                )
-                .toList()
-              ..add(
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: const Icon(
-                        Icons.person_add_alt_1,
-                        size: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 100,
-                      child: TextField(
-                        onChanged: onSearch,
-                        maxLines: null,
-                        onTap: onTap,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          errorBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                          filled: false,
-                          hintText: 'Add...',
-                        ),
-                      ),
-                    ),
-                  ],
+      valueListenable: controller.selectedOptionsNotifier,
+      builder: (context, value, _) {
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: controller.selectedOptions
+              .map<Widget>(
+                (e) => Chip(
+                  label: Text(e.label),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  avatar: const Icon(Icons.person),
+                  side: const BorderSide(),
+                  backgroundColor: Colors.white,
+                  onDeleted: () {
+                    controller.selectOption(e);
+                  },
                 ),
+              )
+              .toList()
+            ..add(
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      border: Border.all(),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: const Icon(
+                      Icons.person_add_alt_1,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 100,
+                    child: TextField(
+                      onChanged: onSearch,
+                      maxLines: null,
+                      onTap: onTap,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                        filled: false,
+                        hintText: 'Add...',
+                      ),
+                    ),
+                  ),
+                ],
               ),
-          );
-        });
+            ),
+        );
+      },
+    );
   }
 }

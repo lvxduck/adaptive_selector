@@ -18,7 +18,6 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.onChanged,
     this.onMultipleChanged,
     this.decoration,
-    this.minMenuWidth,
     this.loading = false,
     this.allowClear = true,
     this.enable = true,
@@ -33,6 +32,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.emptyDataBuilder,
     this.debounceDuration = const Duration(milliseconds: 500),
     this.maxMenuHeight = 160,
+    this.minMenuWidth,
     this.hasMoreData = false,
     this.onLoadMore,
     this.initialOptions,
@@ -150,6 +150,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       options: widget.options ?? [],
       loading: widget.loading,
       hasMore: widget.hasMoreData,
+      isMultiple: widget.isMultiple,
       error: false,
     );
     super.didUpdateWidget(oldWidget);

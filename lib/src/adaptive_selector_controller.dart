@@ -14,7 +14,6 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
     selectedOptionsNotifier = ValueNotifier(selectedOptions);
   }
 
-  final bool isMultiple;
   List<AdaptiveSelectorOption<T>> options;
   late ValueNotifier<Set<AdaptiveSelectorOption<T>>> selectedOptionsNotifier;
 
@@ -23,6 +22,7 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
   bool loading;
   bool error;
   bool hasMore;
+  bool isMultiple;
 
   void selectOption(AdaptiveSelectorOption<T> option) {
     if (isMultiple) {
@@ -51,11 +51,13 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
     required bool error,
     required bool loading,
     required bool hasMore,
+    required bool isMultiple,
   }) {
     this.options = options;
     this.error = error;
     this.loading = loading;
     this.hasMore = hasMore;
+    this.isMultiple = isMultiple;
     notifyListeners();
   }
 }
