@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../adaptive_selector.dart';
-import '../adaptive_selector_controller.dart';
-import '../models/adaptive_selector_option.dart';
 
 class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
   const AdaptiveSelectorOptionsWidget({
@@ -14,6 +12,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
     this.errorBuilder,
     this.emptyDataBuilder,
     this.onLoadMore,
+    this.scrollController,
   }) : super(key: key);
 
   final AdaptiveSelectorController<T> controller;
@@ -24,6 +23,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
   final WidgetBuilder? errorBuilder;
   final WidgetBuilder? emptyDataBuilder;
   final VoidCallback? onLoadMore;
+  final ScrollController? scrollController;
 
   @override
   State<AdaptiveSelectorOptionsWidget<T>> createState() =>
@@ -64,54 +64,62 @@ class _AdaptiveSelectorOptionsWidgetState<T>
   @override
   Widget build(BuildContext context) {
     final options = widget.controller.options;
-    return Stack(
-      children: [
-        if (options.isNotEmpty)
-          NotificationListener<ScrollNotification>(
-            onNotification: handleScrollNotification,
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: options.length + (widget.controller.hasMore ? 1 : 0),
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              itemBuilder: (_, index) {
-                if (index == options.length) {
-                  return Container(
-                    height: 64,
-                    alignment: Alignment.center,
-                    child: const CircularProgressIndicator(),
-                  );
-                }
-                return widget.buildItem(options[index]);
-              },
-              separatorBuilder:
-                  widget.separatorBuilder ?? (_, __) => const SizedBox(),
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Stack(
+        children: [
+          if (options.isNotEmpty)
+            NotificationListener<ScrollNotification>(
+              onNotification: handleScrollNotification,
+              child: ListView.separated(
+                shrinkWrap: true,
+                controller: widget.scrollController,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                itemCount: options.length + (widget.controller.hasMore ? 1 : 0),
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                itemBuilder: (_, index) {
+                  if (index == options.length) {
+                    return Container(
+                      height: 64,
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(),
+                    );
+                  }
+                  return widget.buildItem(options[index]);
+                },
+                separatorBuilder:
+                    widget.separatorBuilder ?? (_, __) => const SizedBox(),
+              ),
             ),
-          ),
-        if (widget.controller.loading)
-          widget.loadingBuilder?.call(context) ??
-              const ColoredBox(
-                color: Colors.white38,
-                child: Center(
-                  child: CircularProgressIndicator(),
+          if (widget.controller.loading)
+            widget.loadingBuilder?.call(context) ??
+                const ColoredBox(
+                  color: Colors.white38,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
-              ),
-        if (!widget.controller.loading && options.isEmpty)
-          widget.emptyDataBuilder?.call(context) ??
-              const SizedBox(
-                height: 100,
-                child: Center(
-                  child: Text('No data'),
+          if (!widget.controller.loading && options.isEmpty)
+            widget.emptyDataBuilder?.call(context) ??
+                const SizedBox(
+                  height: 100,
+                  child: Center(
+                    child: Text('No data'),
+                  ),
                 ),
-              ),
-        if (widget.controller.error)
-          widget.errorBuilder?.call(context) ??
-              const SizedBox(
-                height: 100,
-                child: Center(
-                  child: Icon(Icons.error),
+          if (widget.controller.error)
+            widget.errorBuilder?.call(context) ??
+                const SizedBox(
+                  height: 100,
+                  child: Center(
+                    child: Icon(Icons.error),
+                  ),
                 ),
-              ),
-      ],
+        ],
+      ),
     );
   }
 }

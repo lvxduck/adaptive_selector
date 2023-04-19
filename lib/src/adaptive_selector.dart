@@ -156,15 +156,18 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     super.didUpdateWidget(oldWidget);
   }
 
-  late Widget optionsWidget = AdaptiveSelectorOptionsWidget<T>(
-    controller: controller,
-    loadingBuilder: widget.loadingBuilder,
-    errorBuilder: widget.errorBuilder,
-    emptyDataBuilder: widget.emptyDataBuilder,
-    separatorBuilder: widget.separatorBuilder,
-    onLoadMore: widget.onLoadMore,
-    buildItem: buildItem,
-  );
+  Widget optionsWidget({ScrollController? scrollController}) {
+    return AdaptiveSelectorOptionsWidget<T>(
+      controller: controller,
+      loadingBuilder: widget.loadingBuilder,
+      errorBuilder: widget.errorBuilder,
+      emptyDataBuilder: widget.emptyDataBuilder,
+      separatorBuilder: widget.separatorBuilder,
+      onLoadMore: widget.onLoadMore,
+      buildItem: buildItem,
+      scrollController: scrollController,
+    );
+  }
 
   void showSelector() {
     widget.onSearch?.call('');
@@ -226,14 +229,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height - 100,
-      ),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(12),
-        ),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) {
         return BottomSheetSelector<T>(
           title: widget.bottomSheetTitle ??
@@ -241,8 +237,8 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
               'Selector',
           onSearch: widget.onSearch != null ? debounceSearch : null,
           decoration: widget.decoration,
-          optionsBuilder: (context) {
-            return optionsWidget;
+          optionsBuilder: (context, controller) {
+            return optionsWidget(scrollController: controller);
           },
         );
       },
@@ -258,7 +254,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         return MenuSelector(
           maxHeight: widget.maxMenuHeight,
           optionsBuilder: (context) {
-            return optionsWidget;
+            return optionsWidget();
           },
         );
       },
