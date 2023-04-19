@@ -17,8 +17,11 @@ class BottomSheetSelector<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    return SizedBox(
-      height: media.size.height / 5 * 3 + media.viewInsets.bottom,
+    return Container(
+      height: media.size.height / 5 * 3,
+      margin: EdgeInsets.only(
+        bottom: media.viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -36,6 +39,7 @@ class BottomSheetSelector<T> extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: TextFormField(
+                autofocus: true,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(
                     Icons.search,
