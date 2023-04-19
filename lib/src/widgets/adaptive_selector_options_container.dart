@@ -64,62 +64,56 @@ class _AdaptiveSelectorOptionsWidgetState<T>
   @override
   Widget build(BuildContext context) {
     final options = widget.controller.options;
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Stack(
-        children: [
-          if (options.isNotEmpty)
-            NotificationListener<ScrollNotification>(
-              onNotification: handleScrollNotification,
-              child: ListView.separated(
-                shrinkWrap: true,
-                controller: widget.scrollController,
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                itemCount: options.length + (widget.controller.hasMore ? 1 : 0),
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                itemBuilder: (_, index) {
-                  if (index == options.length) {
-                    return Container(
-                      height: 64,
-                      alignment: Alignment.center,
-                      child: const CircularProgressIndicator(),
-                    );
-                  }
-                  return widget.buildItem(options[index]);
-                },
-                separatorBuilder:
-                    widget.separatorBuilder ?? (_, __) => const SizedBox(),
-              ),
+    return Stack(
+      children: [
+        if (options.isNotEmpty)
+          NotificationListener<ScrollNotification>(
+            onNotification: handleScrollNotification,
+            child: ListView.separated(
+              shrinkWrap: true,
+              controller: widget.scrollController,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              itemCount: options.length + (widget.controller.hasMore ? 1 : 0),
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemBuilder: (_, index) {
+                if (index == options.length) {
+                  return Container(
+                    height: 64,
+                    alignment: Alignment.center,
+                    child: const CircularProgressIndicator(),
+                  );
+                }
+                return widget.buildItem(options[index]);
+              },
+              separatorBuilder:
+                  widget.separatorBuilder ?? (_, __) => const SizedBox(),
             ),
-          if (widget.controller.loading)
-            widget.loadingBuilder?.call(context) ??
-                const ColoredBox(
-                  color: Colors.white38,
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
+          ),
+        if (widget.controller.loading)
+          widget.loadingBuilder?.call(context) ??
+              const ColoredBox(
+                color: Colors.white38,
+                child: Center(
+                  child: CircularProgressIndicator(),
                 ),
-          if (!widget.controller.loading && options.isEmpty)
-            widget.emptyDataBuilder?.call(context) ??
-                const SizedBox(
-                  height: 100,
-                  child: Center(
-                    child: Text('No data'),
-                  ),
+              ),
+        if (!widget.controller.loading && options.isEmpty)
+          widget.emptyDataBuilder?.call(context) ??
+              const SizedBox(
+                height: 100,
+                child: Center(
+                  child: Text('No data'),
                 ),
-          if (widget.controller.error)
-            widget.errorBuilder?.call(context) ??
-                const SizedBox(
-                  height: 100,
-                  child: Center(
-                    child: Icon(Icons.error),
-                  ),
+              ),
+        if (widget.controller.error)
+          widget.errorBuilder?.call(context) ??
+              const SizedBox(
+                height: 100,
+                child: Center(
+                  child: Icon(Icons.error),
                 ),
-        ],
-      ),
+              ),
+      ],
     );
   }
 }

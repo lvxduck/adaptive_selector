@@ -17,7 +17,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.onSearch,
     this.onChanged,
     this.onMultipleChanged,
-    this.decoration,
+    this.decoration = const InputDecoration(),
     this.loading = false,
     this.allowClear = true,
     this.enable = true,
@@ -78,7 +78,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final WidgetBuilder? emptyDataBuilder;
 
   // style
-  final InputDecoration? decoration;
+  final InputDecoration decoration;
   final bool loading;
   final bool allowClear;
   final bool enable;
@@ -183,7 +183,21 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final inputDecoration = widget.decoration ?? const InputDecoration();
+    final inputDecoration = widget.decoration.copyWith(
+      filled: true,
+      fillColor: widget.enable ? widget.decoration.fillColor : Colors.grey[200],
+      suffixIcon: ValueListenableBuilder<Set<AdaptiveSelectorOption<T>>>(
+        valueListenable: controller.selectedOptionsNotifier,
+        builder: (_, selectedOption, ___) {
+          return selectedOption.isNotEmpty && widget.allowClear
+              ? InkWell(
+                  onTap: controller.clearSelectedOption,
+                  child: const Icon(Icons.clear),
+                )
+              : const Icon(Icons.keyboard_arrow_down);
+        },
+      ),
+    );
     if (widget.isMultiple) {
       return widget.fieldBuilder
               ?.call(controller, debounceSearch, showSelector) ??
@@ -191,7 +205,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
             onTap: showSelector,
             decoration: inputDecoration,
             controller: controller,
-            onSearch: debounceSearch,
+            onSearch: widget.onSearch != null ? debounceSearch : null,
           );
     }
     return TextFormField(
@@ -211,16 +225,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       readOnly:
           widget.type == SelectorType.bottomSheet || widget.onSearch == null,
       enabled: widget.enable,
-      decoration: inputDecoration.copyWith(
-        filled: true,
-        fillColor: widget.enable ? inputDecoration.fillColor : Colors.grey[200],
-        suffixIcon: controller.selectedOptions.isNotEmpty && widget.allowClear
-            ? InkWell(
-                onTap: controller.clearSelectedOption,
-                child: const Icon(Icons.clear),
-              )
-            : const Icon(Icons.keyboard_arrow_down),
-      ),
+      decoration: inputDecoration,
     );
   }
 
@@ -233,7 +238,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       builder: (_) {
         return BottomSheetSelector<T>(
           title: widget.bottomSheetTitle ??
-              widget.decoration?.hintText ??
+              widget.decoration.hintText ??
               'Selector',
           onSearch: widget.onSearch != null ? debounceSearch : null,
           decoration: widget.decoration,
