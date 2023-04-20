@@ -86,114 +86,102 @@ class _BasicUsageState extends State<BasicUsage> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        SizedBox(
-          width: 280,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        SwitchListTile(
+          value: enable,
+          onChanged: (value) => setState(() => enable = value),
+          title: const Text('Enable'),
+        ),
+        SwitchListTile(
+          value: allowClear,
+          onChanged: (value) => setState(() => allowClear = value),
+          title: const Text('Allow clear'),
+        ),
+        SwitchListTile(
+          value: shouldShowError,
+          onChanged: (value) => setState(() => shouldShowError = value),
+          title: const Text('Show error'),
+        ),
+        SwitchListTile(
+          value: multiple,
+          onChanged: (value) => setState(() => multiple = value),
+          title: const Text('Is multiple'),
+        ),
+        SwitchListTile(
+          value: searchAble,
+          onChanged: (value) => setState(() => searchAble = value),
+          title: const Text('SearchAble'),
+        ),
+        ListTile(
+          title: Row(
             children: [
-              SwitchListTile(
-                value: enable,
-                onChanged: (value) => setState(() => enable = value),
-                title: const Text('Enable'),
-              ),
-              SwitchListTile(
-                value: allowClear,
-                onChanged: (value) => setState(() => allowClear = value),
-                title: const Text('Allow clear'),
-              ),
-              SwitchListTile(
-                value: shouldShowError,
-                onChanged: (value) => setState(() => shouldShowError = value),
-                title: const Text('Show error'),
-              ),
-              SwitchListTile(
-                value: multiple,
-                onChanged: (value) => setState(() => multiple = value),
-                title: const Text('Is multiple'),
-              ),
-              SwitchListTile(
-                value: searchAble,
-                onChanged: (value) => setState(() => searchAble = value),
-                title: const Text('SearchAble'),
-              ),
-              ListTile(
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Min menu width: ${shouldShowMinMenuWidth ? minMenuWidth.toInt().toString() : ''}',
-                      ),
-                    ),
-                    Switch(
-                      value: shouldShowMinMenuWidth,
-                      onChanged: (value) =>
-                          setState(() => shouldShowMinMenuWidth = value),
-                    ),
-                  ],
+              Expanded(
+                child: Text(
+                  'Min menu width: ${shouldShowMinMenuWidth ? minMenuWidth.toInt().toString() : ''}',
                 ),
-                horizontalTitleGap: 0,
-                subtitle: shouldShowMinMenuWidth
-                    ? Slider(
-                        value: minMenuWidth,
-                        onChanged: (value) =>
-                            setState(() => minMenuWidth = value),
-                        min: 100,
-                        max: 2000,
-                        divisions: 10,
-                      )
-                    : null,
               ),
-              ListTile(
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Max menu height: ${shouldShowMaxMenuHeight ? maxMenuHeight.toInt().toString() : ''}',
-                      ),
-                    ),
-                    Switch(
-                      value: shouldShowMaxMenuHeight,
-                      onChanged: (value) =>
-                          setState(() => shouldShowMaxMenuHeight = value),
-                    ),
-                  ],
-                ),
-                horizontalTitleGap: 0,
-                subtitle: shouldShowMaxMenuHeight
-                    ? Slider(
-                        value: maxMenuHeight,
-                        onChanged: (value) =>
-                            setState(() => maxMenuHeight = value),
-                        min: 100,
-                        max: 400,
-                        divisions: 10,
-                      )
-                    : null,
+              Switch(
+                value: shouldShowMinMenuWidth,
+                onChanged: (value) =>
+                    setState(() => shouldShowMinMenuWidth = value),
               ),
             ],
           ),
+          horizontalTitleGap: 0,
+          subtitle: shouldShowMinMenuWidth
+              ? Slider(
+                  value: minMenuWidth,
+                  onChanged: (value) => setState(() => minMenuWidth = value),
+                  min: 100,
+                  max: 2000,
+                  divisions: 10,
+                )
+              : null,
         ),
-        Expanded(
-          child: AdaptiveSelector(
-            options: userOptions,
-            type: widget.selectorType,
-            // initialOption: userOptions.first,
-            decoration: InputDecoration(
-              hintText: 'Select user',
-              errorText: shouldShowError ? 'Error!' : null,
-            ),
-            enable: enable,
-            allowClear: allowClear,
-            isMultiple: multiple,
-            onSearch: searchAble ? handleSearch : null,
-            loading: loading,
-            hasMoreData: hasMoreData,
-            onLoadMore: handleLoadMore,
-            minMenuWidth: shouldShowMinMenuWidth ? minMenuWidth : null,
-            maxMenuHeight: shouldShowMaxMenuHeight ? maxMenuHeight : 160,
+        ListTile(
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Max menu height: ${shouldShowMaxMenuHeight ? maxMenuHeight.toInt().toString() : ''}',
+                ),
+              ),
+              Switch(
+                value: shouldShowMaxMenuHeight,
+                onChanged: (value) =>
+                    setState(() => shouldShowMaxMenuHeight = value),
+              ),
+            ],
           ),
+          horizontalTitleGap: 0,
+          subtitle: shouldShowMaxMenuHeight
+              ? Slider(
+                  value: maxMenuHeight,
+                  onChanged: (value) => setState(() => maxMenuHeight = value),
+                  min: 100,
+                  max: 400,
+                  divisions: 10,
+                )
+              : null,
+        ),
+        AdaptiveSelector(
+          options: userOptions,
+          type: widget.selectorType,
+          // initialOption: userOptions.first,
+          decoration: InputDecoration(
+            hintText: 'Select user',
+            errorText: shouldShowError ? 'Error!' : null,
+          ),
+          enable: enable,
+          allowClear: allowClear,
+          isMultiple: multiple,
+          onSearch: searchAble ? handleSearch : null,
+          loading: loading,
+          hasMoreData: hasMoreData,
+          onLoadMore: handleLoadMore,
+          minMenuWidth: shouldShowMinMenuWidth ? minMenuWidth : null,
+          maxMenuHeight: shouldShowMaxMenuHeight ? maxMenuHeight : 160,
         ),
       ],
     );

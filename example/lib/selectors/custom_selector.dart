@@ -154,7 +154,9 @@ class CustomField extends StatelessWidget {
                 (e) => Chip(
                   label: Text(e.label),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  avatar: const Icon(Icons.person),
+                  avatar: const CircleAvatar(
+                    child: Icon(Icons.person, size: 18),
+                  ),
                   side: const BorderSide(),
                   backgroundColor: Colors.white,
                   onDeleted: () {
