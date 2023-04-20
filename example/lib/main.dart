@@ -1,10 +1,9 @@
 import 'package:adaptive_selector/adaptive_selector.dart';
-import 'package:example/selectors/basic_usage.dart';
+import 'package:example/selectors/basic_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
-import 'selectors/async_value_selector.dart';
-import 'selectors/custom_tile_selector.dart';
+import 'selectors/custom_selector.dart';
 
 void main() {
   runApp(
@@ -30,7 +29,12 @@ class MyApp extends StatelessWidget {
         ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
+          filled: true,
           fillColor: Colors.white,
+          hintStyle: const TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(
@@ -77,49 +81,55 @@ class _DemoState extends State<Demo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(32),
-        children: [
-          Text(
-            'Adaptive selector',
-            style: Theme.of(context).textTheme.headline4,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: ListView(
+            padding: const EdgeInsets.all(32),
+            children: [
+              const SizedBox(height: 32),
+              Text(
+                'Adaptive selector',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const Label('Select selector type'),
+              AdaptiveSelector<SelectorType>(
+                options: SelectorType.values
+                    .map(
+                      (e) => AdaptiveSelectorOption(
+                        label: e.name,
+                        value: e,
+                      ),
+                    )
+                    .toList(),
+                type: SelectorType.menu,
+                initialOption: AdaptiveSelectorOption(
+                  label: SelectorType.menu.name,
+                  value: SelectorType.menu,
+                ),
+                allowClear: false,
+                onChanged: (option) {
+                  setState(() {
+                    selectorType = option!.value;
+                  });
+                },
+              ),
+              const Label('Basic'),
+              BasicUsage(
+                selectorType: selectorType,
+              ),
+              // const Label('Search, Infinity list'),
+              // AsyncValueSelector(
+              //   selectorType: selectorType,
+              // ),
+              const Label('Custom'),
+              CustomSelector(
+                selectorType: selectorType,
+              ),
+              const SizedBox(height: 32),
+            ],
           ),
-          const Label('Select selector type'),
-          AdaptiveSelector<SelectorType>(
-            options: SelectorType.values
-                .map(
-                  (e) => AdaptiveSelectorOption(
-                    label: e.name,
-                    value: e,
-                  ),
-                )
-                .toList(),
-            type: SelectorType.menu,
-            initialOption: AdaptiveSelectorOption(
-              label: SelectorType.menu.name,
-              value: SelectorType.menu,
-            ),
-            allowClear: false,
-            onChanged: (option) {
-              setState(() {
-                selectorType = option!.value;
-              });
-            },
-          ),
-          const Label('Basic Usage'),
-          BasicUsage(
-            selectorType: selectorType,
-          ),
-          const Label('Search, Infinity list'),
-          AsyncValueSelector(
-            selectorType: selectorType,
-          ),
-          const Label('Custom tile'),
-          CustomTileSelector(
-            selectorType: selectorType,
-          ),
-          const SizedBox(height: 32),
-        ],
+        ),
       ),
     );
   }
