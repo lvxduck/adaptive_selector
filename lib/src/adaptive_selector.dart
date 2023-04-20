@@ -237,9 +237,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       backgroundColor: Colors.transparent,
       builder: (_) {
         return BottomSheetSelector<T>(
-          title: widget.bottomSheetTitle ??
-              widget.decoration.hintText ??
-              'Selector',
           onSearch: widget.onSearch != null ? debounceSearch : null,
           decoration: widget.decoration,
           optionsBuilder: (context, controller) {
