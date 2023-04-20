@@ -31,7 +31,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.errorBuilder,
     this.emptyDataBuilder,
     this.debounceDuration = const Duration(milliseconds: 500),
-    this.maxMenuHeight = 160,
+    this.maxMenuHeight = 260,
     this.minMenuWidth,
     this.hasMoreData = false,
     this.onLoadMore,
@@ -166,6 +166,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       onLoadMore: widget.onLoadMore,
       buildItem: buildItem,
       scrollController: scrollController,
+      selectorType: widget.type,
     );
   }
 

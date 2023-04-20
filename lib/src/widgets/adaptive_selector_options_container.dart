@@ -13,6 +13,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
     this.emptyDataBuilder,
     this.onLoadMore,
     this.scrollController,
+    required this.selectorType,
   }) : super(key: key);
 
   final AdaptiveSelectorController<T> controller;
@@ -24,6 +25,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
   final WidgetBuilder? emptyDataBuilder;
   final VoidCallback? onLoadMore;
   final ScrollController? scrollController;
+  final SelectorType selectorType;
 
   @override
   State<AdaptiveSelectorOptionsWidget<T>> createState() =>
@@ -72,7 +74,10 @@ class _AdaptiveSelectorOptionsWidgetState<T>
             child: ListView.separated(
               shrinkWrap: true,
               controller: widget.scrollController,
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              keyboardDismissBehavior:
+                  widget.selectorType == SelectorType.bottomSheet
+                      ? ScrollViewKeyboardDismissBehavior.onDrag
+                      : ScrollViewKeyboardDismissBehavior.manual,
               itemCount: options.length + (widget.controller.hasMore ? 1 : 0),
               padding: const EdgeInsets.symmetric(vertical: 4),
               itemBuilder: (_, index) {
