@@ -1,0 +1,27 @@
+name: GH-Pages
+on:
+  push:
+    branches:
+      - feat/workflows
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: ./example
+      - name: Build Web
+        run: flutter build web --release --source-maps
+        working-directory: ./example
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ./example/build/web
+          branch: gh-pages
