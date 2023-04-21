@@ -50,9 +50,6 @@ class _CustomSelectorState extends State<CustomSelector> {
           },
         ),
         const SizedBox(height: 16),
-        AdaptiveSelector(
-          options: options,
-        ),
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
