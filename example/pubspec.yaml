@@ -32,8 +32,6 @@ dependencies:
   adaptive_selector:
     path: ../
   cupertino_icons: ^1.0.2
-  flutter_portal: ^1.1.2
-  dropdown_search: ^5.0.3
   faker: ^2.1.0
 
 dev_dependencies:

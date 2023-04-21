@@ -1,41 +1,58 @@
-## adaptive_selector
+<div align="center">
+  <h1>adaptive_selector</h1>
+  <div>
+    <a title="pub.dev" href="https://pub.dartlang.org/packages/fluent_ui" >
+      <img src="https://img.shields.io/pub/v/fluent_ui.svg?style=flat-square&include_prereleases&color=dc143c" />
+    </a>
+    <a title="GitHub License" href="https://github.com/lvxduck/adaptive_selector/blob/master/LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-yellow.svg" />
+    </a>
+    <a title="Made with Fluent Design" href="https://lvxduck.github.io/adaptive_selector">
+      <img src="https://img.shields.io/badge/-web demo-green">
+    </a>
+  </div>
+  <br/>
+  <p>
+      Simple and robust Selector that adaptive for all platform.
+  </p>
+</div>
 
-##### Simple and robust Selector that adaptive for all platform.
+<div align="center">
+  <a href="https://lvxduck.github.io/adaptive_selector">
+    <img src="https://raw.githubusercontent.com/lvxduck/adaptive_selector/master/demo/example-showcase.png" />
+  </a>
+</div>
 
-| Menu Selector | Bottom Sheet Selector    |
-| :---:   | :---: |
-| ![](https://raw.githubusercontent.com/lvxduck/adaptive_selector/master/demo/m_selector.jpg) | ![](https://raw.githubusercontent.com/lvxduck/adaptive_selector/master/demo/b_selector.jpg) |
-| ![](https://raw.githubusercontent.com/lvxduck/adaptive_selector/master/demo/m_selector_search.jpg) | ![](https://raw.githubusercontent.com/lvxduck/adaptive_selector/master/demo/b_selector_search.jpg) |
-| ![](https://raw.githubusercontent.com/lvxduck/adaptive_selector/master/demo/m_selector.jpg) | ![](https://raw.githubusercontent.com/lvxduck/adaptive_selector/master/demo/b_selector_keyboard.jpg) |
+---
+
 
 ## Getting started
 
-#### Basic usage
+### Basic usage
 ```dart
+// Create list option
+final options = SelectorType.values
+  .map((e) => AdaptiveSelectorOption(label: e.name, value: e))
+  .toList();
+// Apply option to AdaptiveSelector
 AdaptiveSelector(
   options: options,
-  decoration: const InputDecoration(
-    hintText: 'Select school',
-  ),
-  itemBuilder: (option, isSelected) => SelectorTile(
-    option: option,
-    isSelected: isSelected,
-  ),
+  initialOption: options.first,
+  type: SelectorType.menu,
+  allowClear: false,
 ),
 ```
 
-#### Async selector
+### Async selector
 ```dart
 AdaptiveSelector(
   options: asyncOptions,
   decoration: const InputDecoration(
     hintText: 'Select school',
   ),
-  itemBuilder: (option, isSelected) => SelectorTile(
-    option: option,
-    isSelected: isSelected,
-  ),
   loading: loading,
-  onSearch: onSearch,
+  onSearch: handleSearch,
+  hasMoreData: hasMore,
+  onLoadMore: handleLoadMore,
 ),
 ```

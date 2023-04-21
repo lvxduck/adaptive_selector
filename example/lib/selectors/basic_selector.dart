@@ -106,12 +106,12 @@ class _BasicUsageState extends State<BasicUsage> {
         SwitchListTile(
           value: multiple,
           onChanged: (value) => setState(() => multiple = value),
-          title: const Text('Is multiple'),
+          title: const Text('Multiple'),
         ),
         SwitchListTile(
           value: searchAble,
           onChanged: (value) => setState(() => searchAble = value),
-          title: const Text('SearchAble'),
+          title: const Text('Searchable'),
         ),
         ListTile(
           title: Row(

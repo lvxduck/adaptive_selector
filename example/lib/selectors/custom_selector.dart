@@ -37,7 +37,7 @@ class _CustomSelectorState extends State<CustomSelector> {
           initialOption: options.first,
           maxMenuHeight: 320,
           decoration: InputDecoration(
-            hintText: 'Select job',
+            hintText: 'Select user',
             prefixIcon: const Icon(Icons.person),
             fillColor: Colors.green.withOpacity(0.2),
           ),
@@ -50,6 +50,9 @@ class _CustomSelectorState extends State<CustomSelector> {
           },
         ),
         const SizedBox(height: 16),
+        AdaptiveSelector(
+          options: options,
+        ),
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,

@@ -1,15 +1,12 @@
 import 'package:adaptive_selector/adaptive_selector.dart';
 import 'package:example/selectors/basic_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_portal/flutter_portal.dart';
 
 import 'selectors/custom_selector.dart';
 
 void main() {
   runApp(
-    const Portal(
-      child: MyApp(),
-    ),
+    const MyApp(),
   );
 }
 
@@ -20,6 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         tabBarTheme: TabBarTheme(
@@ -81,53 +79,57 @@ class _DemoState extends State<Demo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: ListView(
+      body: SingleChildScrollView(
+        child: Center(
+          child: Container(
             padding: const EdgeInsets.all(32),
-            children: [
-              const SizedBox(height: 32),
-              Text(
-                'Adaptive selector',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const Label('Select selector type'),
-              AdaptiveSelector<SelectorType>(
-                options: SelectorType.values
-                    .map(
-                      (e) => AdaptiveSelectorOption(
-                        label: e.name,
-                        value: e,
-                      ),
-                    )
-                    .toList(),
-                type: SelectorType.menu,
-                initialOption: AdaptiveSelectorOption(
-                  label: SelectorType.menu.name,
-                  value: SelectorType.menu,
+            constraints: const BoxConstraints(maxWidth: 600),
+            alignment: Alignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                Text(
+                  'Adaptive selector',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineMedium
+                      ?.copyWith(color: Colors.grey[800]),
                 ),
-                allowClear: false,
-                onChanged: (option) {
-                  setState(() {
-                    selectorType = option!.value;
-                  });
-                },
-              ),
-              const Label('Basic'),
-              BasicUsage(
-                selectorType: selectorType,
-              ),
-              // const Label('Search, Infinity list'),
-              // AsyncValueSelector(
-              //   selectorType: selectorType,
-              // ),
-              const Label('Custom'),
-              CustomSelector(
-                selectorType: selectorType,
-              ),
-              const SizedBox(height: 32),
-            ],
+                const SizedBox(height: 12),
+                const Label('Selector type'),
+                AdaptiveSelector<SelectorType>(
+                  options: SelectorType.values
+                      .map(
+                        (e) => AdaptiveSelectorOption(
+                          label: e.name,
+                          value: e,
+                        ),
+                      )
+                      .toList(),
+                  type: SelectorType.menu,
+                  initialOption: AdaptiveSelectorOption(
+                    label: SelectorType.menu.name,
+                    value: SelectorType.menu,
+                  ),
+                  allowClear: false,
+                  onChanged: (option) {
+                    setState(() {
+                      selectorType = option!.value;
+                    });
+                  },
+                ),
+                const Label('Basic'),
+                BasicUsage(
+                  selectorType: selectorType,
+                ),
+                const Label('Custom'),
+                CustomSelector(
+                  selectorType: selectorType,
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),
