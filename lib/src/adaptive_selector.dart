@@ -113,6 +113,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     loading: false,
     hasMore: widget.hasMoreData,
     isMultiple: widget.isMultiple,
+    enable: widget.enable,
   );
 
   void debounceSearch(String value) {
@@ -152,6 +153,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       hasMore: widget.hasMoreData,
       isMultiple: widget.isMultiple,
       error: false,
+      enable: widget.enable,
     );
     super.didUpdateWidget(oldWidget);
   }
@@ -190,12 +192,17 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       suffixIcon: ValueListenableBuilder<Set<AdaptiveSelectorOption<T>>>(
         valueListenable: controller.selectedOptionsNotifier,
         builder: (_, selectedOption, ___) {
-          return selectedOption.isNotEmpty && widget.allowClear
-              ? InkWell(
-                  onTap: controller.clearSelectedOption,
-                  child: const Icon(Icons.clear),
-                )
-              : const Icon(Icons.keyboard_arrow_down);
+          if (selectedOption.isNotEmpty && widget.allowClear) {
+            return Tooltip(
+              message: MaterialLocalizations.of(context).deleteButtonTooltip,
+              child: InkWell(
+                onTap: controller.clearSelectedOption,
+                child: const Icon(Icons.clear),
+              ),
+            );
+          } else {
+            return const Icon(Icons.keyboard_arrow_down);
+          }
         },
       ),
     );
@@ -212,17 +219,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     return TextFormField(
       controller: textController,
       onChanged: debounceSearch,
-      onTap: () {
-        widget.onSearch?.call('');
-        switch (widget.type) {
-          case SelectorType.bottomSheet:
-            showBottomSheet();
-            break;
-          case SelectorType.menu:
-            showMenu();
-            break;
-        }
-      },
+      onTap: showSelector,
       readOnly:
           widget.type == SelectorType.bottomSheet || widget.onSearch == null,
       enabled: widget.enable,
