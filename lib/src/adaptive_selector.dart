@@ -187,24 +187,30 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   @override
   Widget build(BuildContext context) {
     final inputDecoration = widget.decoration.copyWith(
-      filled: true,
-      fillColor: widget.enable ? widget.decoration.fillColor : Colors.grey[200],
-      suffixIcon: ValueListenableBuilder<Set<AdaptiveSelectorOption<T>>>(
-        valueListenable: controller.selectedOptionsNotifier,
-        builder: (_, selectedOption, ___) {
-          if (selectedOption.isNotEmpty && widget.allowClear) {
-            return Tooltip(
-              message: MaterialLocalizations.of(context).deleteButtonTooltip,
-              child: InkWell(
-                onTap: controller.clearSelectedOption,
-                child: const Icon(Icons.clear),
-              ),
-            );
-          } else {
-            return const Icon(Icons.keyboard_arrow_down);
-          }
-        },
-      ),
+      filled: widget.decoration.filled ?? true,
+      fillColor: widget.decoration.fillColor ??
+          (widget.enable ? widget.decoration.fillColor : Colors.grey[200]),
+      suffixIcon: widget.decoration.suffixIcon ??
+          ValueListenableBuilder<Set<AdaptiveSelectorOption<T>>>(
+            valueListenable: controller.selectedOptionsNotifier,
+            builder: (_, selectedOption, ___) {
+              if (selectedOption.isNotEmpty && widget.allowClear) {
+                return Tooltip(
+                  message:
+                      MaterialLocalizations.of(context).deleteButtonTooltip,
+                  child: InkWell(
+                    onTap: controller.clearSelectedOption,
+                    child: const Icon(Icons.clear),
+                  ),
+                );
+              } else {
+                return InkWell(
+                  onTap: showSelector,
+                  child: const Icon(Icons.keyboard_arrow_down),
+                );
+              }
+            },
+          ),
     );
     if (widget.isMultiple) {
       return widget.fieldBuilder

@@ -66,51 +66,45 @@ class _MultipleSelectorTextFieldState<T>
         child: InputDecorator(
           isFocused: hasFocus,
           decoration: widget.decoration,
-          child: selectedOptions.isEmpty
-              ? Text(
-                  widget.decoration.hintText ?? '',
-                  style: widget.decoration.hintStyle ??
-                      Theme.of(context).inputDecorationTheme.hintStyle,
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: widget.controller.selectedOptions
+                .map<Widget>(
+                  (e) => Chip(
+                    label: Text(e.label),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onDeleted: () {
+                      widget.controller.selectOption(e);
+                    },
+                  ),
                 )
-              : Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: widget.controller.selectedOptions
-                      .map<Widget>(
-                        (e) => Chip(
-                          label: Text(e.label),
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          onDeleted: () {
-                            widget.controller.selectOption(e);
-                          },
-                        ),
-                      )
-                      .toList()
-                    ..add(
-                      widget.onSearch == null
-                          ? const SizedBox()
-                          : ConstrainedBox(
-                              constraints: const BoxConstraints(minWidth: 48),
-                              child: IntrinsicWidth(
-                                child: TextField(
-                                  focusNode: focus,
-                                  readOnly: widget.onSearch == null,
-                                  onChanged: widget.onSearch,
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    errorBorder: InputBorder.none,
-                                    disabledBorder: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ),
-                            ),
+                .toList()
+              ..add(
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 48),
+                  child: IntrinsicWidth(
+                    child: TextField(
+                      focusNode: focus,
+                      readOnly: widget.onSearch == null,
+                      onChanged: widget.onSearch,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        hintText: selectedOptions.isEmpty
+                            ? widget.decoration.hintText
+                            : null,
+                        disabledBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
                     ),
+                  ),
                 ),
+              ),
+          ),
         ),
       ),
     );

@@ -29,10 +29,6 @@ class MyApp extends StatelessWidget {
           isDense: true,
           filled: true,
           fillColor: Colors.white,
-          hintStyle: const TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(
