@@ -40,6 +40,7 @@ class _CustomSelectorState extends State<CustomSelector> {
             hintText: 'Select user',
             prefixIcon: const Icon(Icons.person),
             fillColor: Colors.green.withOpacity(0.2),
+            suffixIcon: const Icon(Icons.lock_clock),
           ),
           itemBuilder: (option, selected, onTap) {
             return PersonSelectorTile(
