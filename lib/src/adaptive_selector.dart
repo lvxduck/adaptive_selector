@@ -186,6 +186,13 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.fieldBuilder != null) {
+      return widget.fieldBuilder!.call(
+        controller,
+        debounceSearch,
+        showSelector,
+      );
+    }
     final inputDecoration = widget.decoration.copyWith(
       filled: widget.decoration.filled ?? true,
       fillColor: widget.decoration.fillColor ??
@@ -213,14 +220,12 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           ),
     );
     if (widget.isMultiple) {
-      return widget.fieldBuilder
-              ?.call(controller, debounceSearch, showSelector) ??
-          MultipleSelectorTextField(
-            onTap: showSelector,
-            decoration: inputDecoration,
-            controller: controller,
-            onSearch: widget.onSearch != null ? debounceSearch : null,
-          );
+      MultipleSelectorTextField(
+        onTap: showSelector,
+        decoration: inputDecoration,
+        controller: controller,
+        onSearch: widget.onSearch != null ? debounceSearch : null,
+      );
     }
     return TextFormField(
       controller: textController,
