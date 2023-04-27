@@ -188,6 +188,7 @@ class CustomField extends StatelessWidget {
                     child: TextField(
                       onChanged: onSearch,
                       onTap: onTap,
+                      readOnly: onSearch == null,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         focusedBorder: InputBorder.none,

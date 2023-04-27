@@ -118,7 +118,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     enable: widget.enable,
   );
 
-  void debounceSearch(String value) {
+  void handleTextChange(String value) {
     if (_timer != null) {
       _timer?.cancel();
     }
@@ -197,10 +197,11 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final onTextChange = widget.onSearch != null ? handleTextChange : null;
     if (widget.fieldBuilder != null) {
       return widget.fieldBuilder!.call(
         controller,
-        debounceSearch,
+        onTextChange,
         showSelector,
       );
     }
@@ -235,12 +236,12 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         onTap: showSelector,
         decoration: inputDecoration,
         controller: controller,
-        onSearch: widget.onSearch != null ? debounceSearch : null,
+        onSearch: onTextChange,
       );
     }
     return TextFormField(
       controller: textController,
-      onChanged: debounceSearch,
+      onChanged: onTextChange,
       onTap: showSelector,
       readOnly:
           widget.type == SelectorType.bottomSheet || widget.onSearch == null,
@@ -257,7 +258,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       backgroundColor: Colors.transparent,
       builder: (_) {
         return BottomSheetSelector<T>(
-          onSearch: widget.onSearch != null ? debounceSearch : null,
+          onSearch: widget.onSearch != null ? handleTextChange : null,
           decoration: widget.decoration,
           optionsBuilder: (context, controller) {
             return optionsWidget(scrollController: controller);
