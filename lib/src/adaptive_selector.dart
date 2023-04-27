@@ -38,6 +38,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.initialOptions,
     this.isMultiple = false,
     this.fieldBuilder,
+    this.refreshWhenShow = false,
   }) : super(key: key);
 
   final SelectorType type;
@@ -84,6 +85,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final bool enable;
   final bool hasMoreData;
   final Duration debounceDuration;
+  final bool refreshWhenShow;
 
   // for menu selector
   final double maxMenuHeight;
@@ -179,7 +181,9 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   void showSelector() async {
     textController.clear();
-    widget.onSearch?.call('');
+    if (controller.options.isEmpty || widget.refreshWhenShow) {
+      widget.onSearch?.call('');
+    }
     switch (widget.type) {
       case SelectorType.bottomSheet:
         await showBottomSheet();

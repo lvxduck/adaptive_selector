@@ -70,6 +70,7 @@ class _BasicUsageState extends State<BasicUsage> {
 
   bool enable = true;
   bool allowClear = true;
+  bool refreshWhenShow = false;
   bool shouldShowMinMenuWidth = false;
   bool shouldShowMaxMenuHeight = false;
   bool shouldShowError = false;
@@ -97,6 +98,11 @@ class _BasicUsageState extends State<BasicUsage> {
           value: allowClear,
           onChanged: (value) => setState(() => allowClear = value),
           title: const Text('Allow clear'),
+        ),
+        SwitchListTile(
+          value: refreshWhenShow,
+          onChanged: (value) => setState(() => refreshWhenShow = value),
+          title: const Text('Refresh when show'),
         ),
         SwitchListTile(
           value: shouldShowError,
@@ -176,6 +182,7 @@ class _BasicUsageState extends State<BasicUsage> {
           enable: enable,
           allowClear: allowClear,
           isMultiple: multiple,
+          refreshWhenShow: refreshWhenShow,
           onSearch: searchAble ? handleSearch : null,
           loading: loading,
           hasMoreData: hasMoreData,
