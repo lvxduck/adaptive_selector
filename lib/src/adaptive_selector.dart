@@ -220,7 +220,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           ),
     );
     if (widget.isMultiple) {
-      MultipleSelectorTextField(
+      return MultipleSelectorTextField(
         onTap: showSelector,
         decoration: inputDecoration,
         controller: controller,
