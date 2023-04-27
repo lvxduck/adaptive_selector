@@ -138,9 +138,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       } else {
         widget.onChanged?.call(options.isNotEmpty ? options.first : null);
       }
-      if (!widget.isMultiple) {
-        textController.text = options.isNotEmpty ? options.first.label : '';
-      }
+      updateTextField();
     });
     super.initState();
   }
@@ -172,16 +170,25 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     );
   }
 
-  void showSelector() {
+  void updateTextField() {
+    final options = controller.selectedOptions;
+    if (!widget.isMultiple) {
+      textController.text = options.isNotEmpty ? options.first.label : '';
+    }
+  }
+
+  void showSelector() async {
+    textController.clear();
     widget.onSearch?.call('');
     switch (widget.type) {
       case SelectorType.bottomSheet:
-        showBottomSheet();
+        await showBottomSheet();
         break;
       case SelectorType.menu:
-        showMenu();
+        await showMenu();
         break;
     }
+    updateTextField();
   }
 
   @override
@@ -238,7 +245,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     );
   }
 
-  void showBottomSheet() async {
+  Future showBottomSheet() async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -257,8 +264,8 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
-  void showMenu() {
-    showMenuSelector(
+  Future showMenu() {
+    return showMenuSelector(
       context: context,
       minWidth: widget.minMenuWidth,
       builder: (context) {
