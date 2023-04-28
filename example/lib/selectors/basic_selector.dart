@@ -78,6 +78,7 @@ class _BasicUsageState extends State<BasicUsage> {
   bool searchAble = false;
   double minMenuWidth = 320;
   double maxMenuHeight = 120;
+  double bottomSheetSize = 0.5;
 
   @override
   void initState() {
@@ -134,7 +135,6 @@ class _BasicUsageState extends State<BasicUsage> {
               ),
             ],
           ),
-          horizontalTitleGap: 0,
           subtitle: shouldShowMinMenuWidth
               ? Slider(
                   value: minMenuWidth,
@@ -160,7 +160,6 @@ class _BasicUsageState extends State<BasicUsage> {
               ),
             ],
           ),
-          horizontalTitleGap: 0,
           subtitle: shouldShowMaxMenuHeight
               ? Slider(
                   value: maxMenuHeight,
@@ -170,6 +169,24 @@ class _BasicUsageState extends State<BasicUsage> {
                   divisions: 10,
                 )
               : null,
+        ),
+        ListTile(
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Bottom sheet size: ${bottomSheetSize.toStringAsFixed(1)}',
+                ),
+              ),
+            ],
+          ),
+          subtitle: Slider(
+            value: bottomSheetSize,
+            onChanged: (value) => setState(() => bottomSheetSize = value),
+            min: 0.2,
+            max: 1,
+            divisions: 10,
+          ),
         ),
         AdaptiveSelector(
           options: userOptions,
@@ -189,6 +206,7 @@ class _BasicUsageState extends State<BasicUsage> {
           onLoadMore: handleLoadMore,
           minMenuWidth: shouldShowMinMenuWidth ? minMenuWidth : null,
           maxMenuHeight: shouldShowMaxMenuHeight ? maxMenuHeight : 160,
+          bottomSheetSize: bottomSheetSize,
         ),
       ],
     );

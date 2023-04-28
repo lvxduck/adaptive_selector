@@ -6,11 +6,13 @@ class BottomSheetSelector<T> extends StatelessWidget {
     required this.optionsBuilder,
     this.onSearch,
     this.decoration,
+    required this.bottomSheetSize,
   }) : super(key: key);
 
   final ValueChanged<String>? onSearch;
   final ScrollableWidgetBuilder optionsBuilder;
   final InputDecoration? decoration;
+  final double bottomSheetSize;
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +23,8 @@ class BottomSheetSelector<T> extends StatelessWidget {
           onTap: Navigator.of(context).pop,
         ),
         DraggableScrollableSheet(
-          initialChildSize: onSearch != null ? 1 : 0.5,
-          minChildSize: onSearch != null ? 0.6 : 0.5,
+          initialChildSize: onSearch != null ? 1 : bottomSheetSize,
+          minChildSize: bottomSheetSize,
           snap: true,
           snapAnimationDuration: const Duration(milliseconds: 200),
           builder: (context, controller) {

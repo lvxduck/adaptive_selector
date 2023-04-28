@@ -25,7 +25,6 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.itemBuilder,
     this.initialOption,
     this.type = SelectorType.bottomSheet,
-    this.bottomSheetTitle,
     this.separatorBuilder,
     this.loadingBuilder,
     this.errorBuilder,
@@ -39,7 +38,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.isMultiple = false,
     this.fieldBuilder,
     this.refreshWhenShow = false,
-  }) : super(key: key);
+    this.bottomSheetSize = 0.5,
+  })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
+        super(key: key);
 
   final SelectorType type;
   final bool isMultiple;
@@ -91,8 +92,12 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final double maxMenuHeight;
   final double? minMenuWidth;
 
-  // for bottom sheet only
-  final String? bottomSheetTitle;
+  // for bottom sheet
+  /// The fractional value of the screen height to use when
+  /// displaying the widget.
+  ///
+  /// The default value is `0.5`.
+  final double bottomSheetSize;
 
   @override
   State<AdaptiveSelector<T>> createState() => AdaptiveSelectorState<T>();
@@ -260,6 +265,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         return BottomSheetSelector<T>(
           onSearch: widget.onSearch != null ? handleTextChange : null,
           decoration: widget.decoration,
+          bottomSheetSize: widget.bottomSheetSize,
           optionsBuilder: (context, controller) {
             return optionsWidget(scrollController: controller);
           },
