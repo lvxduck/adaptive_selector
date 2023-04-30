@@ -39,6 +39,10 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.maxMenuHeight = 260,
     this.minMenuWidth,
   })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
+        assert(
+          !(isMultiple == false && initial != null && initial.length > 1),
+          'initial options must has length <= 1 if selector is not isMultiple',
+        ),
         super(key: key);
 
   /// Determine the [SelectorType] type.
@@ -57,7 +61,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
   /// The list of options the user can select.
   final List<AdaptiveSelectorOption<T>>? options;
 
-  // callbacks
+  /// Called to fetch new options based on the keyword
   final ValueChanged<String>? onSearch;
 
   /// Called when the user select or remove an option.
@@ -76,9 +80,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
   /// The custom field builder widget for option
   ///
   /// Tips:
-  ///
-  /// Use the AdaptiveSelector.of(context) method to access methods such as showSelector and handleTextChange,
+  /// - Use the AdaptiveSelector.of(context) method to access methods such as showSelector and handleTextChange,
   /// or properties such as type, enable, decoration, and so on.
+  /// - Take a look at [AdaptiveSelectorField]
   final Widget Function(
     BuildContext context,
     AdaptiveSelectorController<T> controller,
