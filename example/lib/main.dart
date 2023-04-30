@@ -118,9 +118,9 @@ class _DemoState extends State<Demo> {
                   ],
                   decoration: const InputDecoration(hintText: 'Select type'),
                   allowClear: false,
-                  onChanged: (option) {
+                  onChanged: (options) {
                     setState(() {
-                      selectorType = option!.value;
+                      selectorType = options.first.value;
                     });
                   },
                 ),

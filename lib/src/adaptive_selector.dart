@@ -22,7 +22,6 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.onSearch,
     this.onChanged,
     this.onLoadMore,
-    this.onMultipleChanged,
     this.decoration = const InputDecoration(),
     this.loading = false,
     this.allowClear = true,
@@ -60,10 +59,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
 
   // callbacks
   final ValueChanged<String>? onSearch;
-  final ValueChanged<AdaptiveSelectorOption<T>?>? onChanged;
 
-  /// For mode multiple
-  final ValueChanged<List<AdaptiveSelectorOption<T>>>? onMultipleChanged;
+  /// Called when the user select or remove an option.
+  final ValueChanged<List<AdaptiveSelectorOption<T>>>? onChanged;
 
   /// Using for loading infinity page
   final VoidCallback? onLoadMore;
@@ -187,12 +185,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   @override
   void initState() {
     controller.selectedOptionsNotifier.addListener(() {
-      final options = controller.selectedOptions;
-      if (widget.isMultiple) {
-        widget.onMultipleChanged?.call(options);
-      } else {
-        widget.onChanged?.call(options.isNotEmpty ? options.first : null);
-      }
+      widget.onChanged?.call(controller.selectedOptions);
     });
     super.initState();
   }
