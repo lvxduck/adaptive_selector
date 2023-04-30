@@ -84,7 +84,13 @@ class _DemoState extends State<Demo> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: MediaQuery.of(context).viewPadding.top + 12),
+                Builder(
+                  builder: (context) {
+                    return SizedBox(
+                      height: MediaQuery.of(context).padding.top + 12,
+                    );
+                  },
+                ),
                 Text(
                   'Adaptive selector',
                   style: Theme.of(context)
