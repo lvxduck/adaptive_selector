@@ -24,7 +24,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.enable = true,
     required this.options,
     this.itemBuilder,
-    this.initialOption,
+    this.initial,
     this.type = SelectorType.bottomSheet,
     this.separatorBuilder,
     this.loadingBuilder,
@@ -35,7 +35,6 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.minMenuWidth,
     this.hasMoreData = false,
     this.onLoadMore,
-    this.initialOptions,
     this.isMultiple = false,
     this.fieldBuilder,
     this.refreshWhenShow = false,
@@ -46,9 +45,8 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final SelectorType type;
   final bool isMultiple;
 
-  /// Initial selected option
-  final AdaptiveSelectorOption<T>? initialOption;
-  final List<AdaptiveSelectorOption<T>>? initialOptions;
+  /// Initial options
+  final List<AdaptiveSelectorOption<T>>? initial;
   final List<AdaptiveSelectorOption<T>>? options;
 
   // callbacks
@@ -115,16 +113,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
 class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   Timer? _timer;
 
-  Set<AdaptiveSelectorOption<T>> get initialOptions => {
-        if (widget.isMultiple)
-          ...?widget.initialOptions
-        else if (widget.initialOption != null)
-          widget.initialOption!,
-      };
-
   late final controller = AdaptiveSelectorController<T>(
     options: widget.options ?? [],
-    selectedOptions: initialOptions,
+    selectedOptions: {...?widget.initial},
     loading: false,
     hasMore: widget.hasMoreData,
     isMultiple: widget.isMultiple,
@@ -187,11 +178,9 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     }
     switch (widget.type) {
       case SelectorType.bottomSheet:
-        await showBottomSheet();
-        break;
+        return showBottomSheet();
       case SelectorType.menu:
-        await showMenu();
-        break;
+        return showMenu();
     }
   }
 

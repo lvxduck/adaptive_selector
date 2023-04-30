@@ -34,7 +34,7 @@ class _CustomSelectorState extends State<CustomSelector> {
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
-          initialOption: options.first,
+          initial: [options.first],
           maxMenuHeight: 320,
           decoration: InputDecoration(
             hintText: 'Select user',
@@ -54,7 +54,7 @@ class _CustomSelectorState extends State<CustomSelector> {
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
-          initialOptions: options.getRange(0, 5).toList(),
+          initial: options.getRange(0, 5).toList(),
           isMultiple: true,
           maxMenuHeight: 320,
           fieldBuilder: (_, controller) {

@@ -110,10 +110,12 @@ class _DemoState extends State<Demo> {
                       )
                       .toList(),
                   type: SelectorType.menu,
-                  initialOption: AdaptiveSelectorOption(
-                    label: SelectorType.menu.name,
-                    value: SelectorType.menu,
-                  ),
+                  initial: [
+                    AdaptiveSelectorOption(
+                      label: SelectorType.menu.name,
+                      value: SelectorType.menu,
+                    ),
+                  ],
                   decoration: const InputDecoration(hintText: 'Select type'),
                   allowClear: false,
                   onChanged: (option) {

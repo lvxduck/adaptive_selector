@@ -87,7 +87,9 @@ class _MultipleSelectorTextFieldState<T>
                     child: TextField(
                       controller: textController,
                       focusNode: focus,
-                      readOnly: selector.widget.onSearch == null,
+                      readOnly:
+                          selector.widget.type == SelectorType.bottomSheet ||
+                              selector.widget.onSearch == null,
                       onChanged: selector.widget.onSearch,
                       decoration: InputDecoration(
                         border: InputBorder.none,
