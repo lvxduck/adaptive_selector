@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../adaptive_selector_controller.dart';
+import '../../adaptive_selector.dart';
 
 class MultipleSelectorTextField<T> extends StatefulWidget {
   const MultipleSelectorTextField({
     Key? key,
-    required this.onTap,
     required this.decoration,
     required this.controller,
-    this.onSearch,
   }) : super(key: key);
 
-  final VoidCallback onTap;
   final InputDecoration decoration;
   final AdaptiveSelectorController<T> controller;
-  final ValueChanged<String>? onSearch;
 
   @override
   State<MultipleSelectorTextField<T>> createState() =>
@@ -23,6 +19,7 @@ class MultipleSelectorTextField<T> extends StatefulWidget {
 
 class _MultipleSelectorTextFieldState<T>
     extends State<MultipleSelectorTextField<T>> {
+  final textController = TextEditingController();
   final focus = FocusNode();
   bool hasFocus = false;
 
@@ -49,14 +46,16 @@ class _MultipleSelectorTextFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    final selector = AdaptiveSelector.of(context);
     final selectedOptions = widget.controller.selectedOptions;
     return AbsorbPointer(
       absorbing: !widget.controller.enable,
       child: InkWell(
-        onTapDown: (_) {
+        onTapDown: (_) async {
           if (!hasFocus) {
             focus.requestFocus();
-            widget.onTap();
+            await selector.showSelector();
+            textController.clear();
           }
         },
         splashFactory: NoSplash.splashFactory,
@@ -86,9 +85,10 @@ class _MultipleSelectorTextFieldState<T>
                   constraints: const BoxConstraints(minWidth: 48),
                   child: IntrinsicWidth(
                     child: TextField(
+                      controller: textController,
                       focusNode: focus,
-                      readOnly: widget.onSearch == null,
-                      onChanged: widget.onSearch,
+                      readOnly: selector.widget.onSearch == null,
+                      onChanged: selector.widget.onSearch,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         focusedBorder: InputBorder.none,

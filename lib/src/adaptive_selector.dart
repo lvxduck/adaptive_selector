@@ -7,6 +7,7 @@ import 'models/adaptive_selector_option.dart';
 import 'models/selector_type.dart';
 import 'selectors/bottom_sheet_selector.dart';
 import 'selectors/menu_selector.dart';
+import 'widgets/adaptive_selector_field.dart';
 import 'widgets/adaptive_selector_multiple_field.dart';
 import 'widgets/adaptive_selector_options_container.dart';
 import 'widgets/adaptive_selector_tile.dart';
@@ -70,9 +71,8 @@ class AdaptiveSelector<T> extends StatefulWidget {
     VoidCallback onTap,
   )? itemBuilder;
   final Widget Function(
+    BuildContext context,
     AdaptiveSelectorController<T> controller,
-    ValueChanged<String>? onSearch,
-    VoidCallback onTap,
   )? fieldBuilder;
   final IndexedWidgetBuilder? separatorBuilder;
   final WidgetBuilder? loadingBuilder;
@@ -197,13 +197,8 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final onTextChange = widget.onSearch != null ? handleTextChange : null;
     if (widget.fieldBuilder != null) {
-      return widget.fieldBuilder!.call(
-        controller,
-        onTextChange,
-        showSelector,
-      );
+      return widget.fieldBuilder!.call(context, controller);
     }
     final inputDecoration = widget.decoration.copyWith(
       filled: widget.decoration.filled ?? true,
@@ -233,10 +228,8 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     );
     if (widget.isMultiple) {
       return MultipleSelectorTextField(
-        onTap: showSelector,
         decoration: inputDecoration,
         controller: controller,
-        onSearch: onTextChange,
       );
     }
     return AdaptiveSelectorField(
@@ -296,64 +289,5 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           isSelected: isSelected,
           onTap: onTap,
         );
-  }
-}
-
-class AdaptiveSelectorField<T> extends StatefulWidget {
-  const AdaptiveSelectorField({
-    Key? key,
-    required this.decoration,
-    required this.controller,
-  }) : super(key: key);
-
-  final InputDecoration decoration;
-  final AdaptiveSelectorController<T> controller;
-
-  @override
-  State<AdaptiveSelectorField<T>> createState() =>
-      _AdaptiveSelectorFieldState<T>();
-}
-
-class _AdaptiveSelectorFieldState<T> extends State<AdaptiveSelectorField<T>> {
-  final textController = TextEditingController();
-
-  void updateTextField() {
-    final options = widget.controller.selectedOptions;
-    textController.text = options.isNotEmpty ? options.first.label : '';
-  }
-
-  @override
-  void initState() {
-    updateTextField();
-    widget.controller.selectedOptionsNotifier.addListener(
-      updateTextField,
-    );
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    widget.controller.selectedOptionsNotifier.removeListener(
-      updateTextField,
-    );
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final selector = AdaptiveSelector.of(context)!;
-    return TextFormField(
-      controller: textController,
-      onChanged: selector.handleTextChange,
-      onTap: () async {
-        textController.clear();
-        await selector.showSelector();
-        updateTextField();
-      },
-      readOnly: selector.widget.type == SelectorType.bottomSheet ||
-          selector.widget.onSearch == null,
-      enabled: widget.controller.enable,
-      decoration: widget.decoration,
-    );
   }
 }
