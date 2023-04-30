@@ -15,38 +15,47 @@ import 'widgets/adaptive_selector_tile.dart';
 class AdaptiveSelector<T> extends StatefulWidget {
   const AdaptiveSelector({
     Key? key,
+    this.initial,
+    required this.options,
+    this.isMultiple = false,
+    this.type = SelectorType.bottomSheet,
     this.onSearch,
     this.onChanged,
+    this.onLoadMore,
     this.onMultipleChanged,
     this.decoration = const InputDecoration(),
     this.loading = false,
     this.allowClear = true,
     this.enable = true,
-    required this.options,
+    this.hasMoreData = false,
+    this.refreshWhenShow = false,
     this.itemBuilder,
-    this.initial,
-    this.type = SelectorType.bottomSheet,
     this.separatorBuilder,
     this.loadingBuilder,
     this.errorBuilder,
     this.emptyDataBuilder,
+    this.fieldBuilder,
     this.debounceDuration = const Duration(milliseconds: 500),
+    this.bottomSheetSize = 0.5,
     this.maxMenuHeight = 260,
     this.minMenuWidth,
-    this.hasMoreData = false,
-    this.onLoadMore,
-    this.isMultiple = false,
-    this.fieldBuilder,
-    this.refreshWhenShow = false,
-    this.bottomSheetSize = 0.5,
   })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
         super(key: key);
 
+  /// Determine the [SelectorType] type.
+  ///
+  /// Defaults to [SelectorType.bottomSheet]
   final SelectorType type;
+
+  /// Determine if the [AdaptiveSelector] is multiple or not.
   final bool isMultiple;
 
-  /// Initial options
+  /// The value used to for an initial options.
+  ///
+  /// Defaults to null.
   final List<AdaptiveSelectorOption<T>>? initial;
+
+  /// The list of options the user can select.
   final List<AdaptiveSelectorOption<T>>? options;
 
   // callbacks
@@ -59,38 +68,81 @@ class AdaptiveSelector<T> extends StatefulWidget {
   /// Using for loading infinity page
   final VoidCallback? onLoadMore;
 
-  // Widget builder
-  /// Builder Function for item
-  ///
-  /// Default is AdaptiveSelectorOption widget
+  /// The custom builder for option tile
   final Widget Function(
     AdaptiveSelectorOption<T> value,
     bool isSelected,
     VoidCallback onTap,
   )? itemBuilder;
+
+  /// The custom field builder widget for option
+  ///
+  /// Tips:
+  ///
+  /// Use the AdaptiveSelector.of(context) method to access methods such as showSelector and handleTextChange,
+  /// or properties such as type, enable, decoration, and so on.
   final Widget Function(
     BuildContext context,
     AdaptiveSelectorController<T> controller,
   )? fieldBuilder;
+
+  /// The separatorBuilder to custom list options UI
   final IndexedWidgetBuilder? separatorBuilder;
+
+  /// The custom loading builder
   final WidgetBuilder? loadingBuilder;
+
+  /// The custom error builder
   final WidgetBuilder? errorBuilder;
+
+  /// The custom empty data builder
   final WidgetBuilder? emptyDataBuilder;
 
-  // style
+  /// The input decoration of TextField
   final InputDecoration decoration;
+
+  /// Determine if the [AdaptiveSelector] is loading.
+  ///
+  /// Default to false
   final bool loading;
+
+  /// Determine if the [AdaptiveSelector] is allow to clear selected options
+  ///
+  /// Defaults to true
   final bool allowClear;
+
+  /// Determine if the [AdaptiveSelector] is enabled.
+  ///
+  /// Defaults to true.
   final bool enable;
+
+  /// Determine if the [AdaptiveSelector] is has more data to load.
+  ///
+  /// If true [onLoadMore] will be called to fetch more data.
+  ///
+  /// Defaults to true.
   final bool hasMoreData;
+
+  /// The debounce duration of textField to reduce text change event
+  ///
+  /// Defaults to 500 milliseconds
   final Duration debounceDuration;
+
+  /// Determine if the [AdaptiveSelector] should refresh data when shown or continue to use old data.
+  ///
+  /// Defaults to false
   final bool refreshWhenShow;
 
-  // for menu selector
+  /// Determine the height of the menu selector.
+  ///
+  /// Default to 260
   final double maxMenuHeight;
+
+  /// The min width of menu selector
+  ///
+  /// If this is null, the width of the menu will be the same as the width of the selector field
   final double? minMenuWidth;
 
-  // for bottom sheet
   /// The fractional value of the screen height to use when
   /// displaying the widget.
   ///
