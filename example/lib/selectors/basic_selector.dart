@@ -76,7 +76,7 @@ class _BasicUsageState extends State<BasicUsage> {
   bool multiple = false;
   bool searchAble = false;
   double minMenuWidth = 320;
-  double maxMenuHeight = 120;
+  double maxMenuHeight = 320;
   double bottomSheetSize = 0.5;
 
   @override

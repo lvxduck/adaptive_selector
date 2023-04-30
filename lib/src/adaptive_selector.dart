@@ -99,12 +99,20 @@ class AdaptiveSelector<T> extends StatefulWidget {
   /// The default value is `0.5`.
   final double bottomSheetSize;
 
+  /// The data from the closest instance of this class that encloses the given
+  /// context.
+  ///
+  /// Typical usage of the [AdaptiveSelectorState.of] function is to customize
+  /// the AdaptiveSelectorFiled.
+  static AdaptiveSelectorState of(BuildContext context) {
+    return context.findAncestorStateOfType<AdaptiveSelectorState>()!;
+  }
+
   @override
   State<AdaptiveSelector<T>> createState() => AdaptiveSelectorState<T>();
 }
 
 class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
-  final textController = TextEditingController();
   Timer? _timer;
 
   Set<AdaptiveSelectorOption<T>> get initialOptions => {
@@ -135,9 +143,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   @override
   void initState() {
-    if (!widget.isMultiple) {
-      textController.text = widget.initialOption?.label ?? '';
-    }
     controller.selectedOptionsNotifier.addListener(() {
       final options = controller.selectedOptions;
       if (widget.isMultiple) {
@@ -145,7 +150,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       } else {
         widget.onChanged?.call(options.isNotEmpty ? options.first : null);
       }
-      updateTextField();
     });
     super.initState();
   }
@@ -177,15 +181,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     );
   }
 
-  void updateTextField() {
-    final options = controller.selectedOptions;
-    if (!widget.isMultiple) {
-      textController.text = options.isNotEmpty ? options.first.label : '';
-    }
-  }
-
-  void showSelector() async {
-    textController.clear();
+  Future showSelector() async {
     if (controller.options.isEmpty || widget.refreshWhenShow) {
       widget.onSearch?.call('');
     }
@@ -197,7 +193,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         await showMenu();
         break;
     }
-    updateTextField();
   }
 
   @override
@@ -244,14 +239,9 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
         onSearch: onTextChange,
       );
     }
-    return TextFormField(
-      controller: textController,
-      onChanged: onTextChange,
-      onTap: showSelector,
-      readOnly:
-          widget.type == SelectorType.bottomSheet || widget.onSearch == null,
-      enabled: widget.enable,
+    return AdaptiveSelectorField(
       decoration: inputDecoration,
+      controller: controller,
     );
   }
 
@@ -306,5 +296,64 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           isSelected: isSelected,
           onTap: onTap,
         );
+  }
+}
+
+class AdaptiveSelectorField<T> extends StatefulWidget {
+  const AdaptiveSelectorField({
+    Key? key,
+    required this.decoration,
+    required this.controller,
+  }) : super(key: key);
+
+  final InputDecoration decoration;
+  final AdaptiveSelectorController<T> controller;
+
+  @override
+  State<AdaptiveSelectorField<T>> createState() =>
+      _AdaptiveSelectorFieldState<T>();
+}
+
+class _AdaptiveSelectorFieldState<T> extends State<AdaptiveSelectorField<T>> {
+  final textController = TextEditingController();
+
+  void updateTextField() {
+    final options = widget.controller.selectedOptions;
+    textController.text = options.isNotEmpty ? options.first.label : '';
+  }
+
+  @override
+  void initState() {
+    updateTextField();
+    widget.controller.selectedOptionsNotifier.addListener(
+      updateTextField,
+    );
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.controller.selectedOptionsNotifier.removeListener(
+      updateTextField,
+    );
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selector = AdaptiveSelector.of(context)!;
+    return TextFormField(
+      controller: textController,
+      onChanged: selector.handleTextChange,
+      onTap: () async {
+        textController.clear();
+        await selector.showSelector();
+        updateTextField();
+      },
+      readOnly: selector.widget.type == SelectorType.bottomSheet ||
+          selector.widget.onSearch == null,
+      enabled: widget.controller.enable,
+      decoration: widget.decoration,
+    );
   }
 }
