@@ -49,7 +49,7 @@ class _MultipleSelectorTextFieldState<T>
     final selector = AdaptiveSelector.of(context);
     final selectedOptions = widget.controller.selectedOptions;
     return AbsorbPointer(
-      absorbing: !widget.controller.enable,
+      absorbing: !selector.widget.enable,
       child: InkWell(
         onTapDown: (_) async {
           if (!hasFocus) {

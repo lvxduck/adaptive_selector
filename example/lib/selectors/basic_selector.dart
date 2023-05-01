@@ -39,7 +39,7 @@ class _BasicUsageState extends State<BasicUsage> {
     return List.generate(20, (index) => faker.person);
   }
 
-  void handleSearch(value) async {
+  Future handleSearch(value) async {
     setState(() {
       loading = true;
     });
@@ -54,7 +54,7 @@ class _BasicUsageState extends State<BasicUsage> {
     });
   }
 
-  void handleLoadMore() async {
+  Future handleLoadMore() async {
     if (!hasMoreData) return;
     final data = await getList(filter);
     setState(() {

@@ -55,7 +55,7 @@ class _AdaptiveSelectorFieldState<T> extends State<AdaptiveSelectorField<T>> {
       },
       readOnly: selector.widget.type == SelectorType.bottomSheet ||
           selector.widget.onSearch == null,
-      enabled: widget.controller.enable,
+      enabled: selector.widget.enable,
       decoration: widget.decoration,
     );
   }

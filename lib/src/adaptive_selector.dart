@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'adaptive_selector_controller.dart';
@@ -62,13 +63,13 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final List<AdaptiveSelectorOption<T>>? options;
 
   /// Called to fetch new options based on the keyword
-  final ValueChanged<String>? onSearch;
+  final AsyncValueSetter<String>? onSearch;
 
   /// Called when the user select or remove an option.
   final ValueChanged<List<AdaptiveSelectorOption<T>>>? onChanged;
 
   /// Using for loading infinity page
-  final VoidCallback? onLoadMore;
+  final AsyncCallback? onLoadMore;
 
   /// The custom builder for option tile
   final Widget Function(
@@ -173,16 +174,18 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     loading: false,
     hasMore: widget.hasMoreData,
     isMultiple: widget.isMultiple,
-    enable: widget.enable,
   );
 
   void handleTextChange(String value) {
+    if (widget.onSearch == null) return;
     if (_timer != null) {
       _timer?.cancel();
     }
     _timer = Timer(
       widget.debounceDuration,
-      () => widget.onSearch?.call(value),
+      () {
+        controller.guardFuture(() => widget.onSearch!.call(value));
+      },
     );
   }
 
@@ -201,8 +204,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       loading: widget.loading,
       hasMore: widget.hasMoreData,
       isMultiple: widget.isMultiple,
-      error: false,
-      enable: widget.enable,
     );
     super.didUpdateWidget(oldWidget);
   }
@@ -214,7 +215,11 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       errorBuilder: widget.errorBuilder,
       emptyDataBuilder: widget.emptyDataBuilder,
       separatorBuilder: widget.separatorBuilder,
-      onLoadMore: widget.onLoadMore,
+      onLoadMore: () {
+        if (widget.onLoadMore != null) {
+          controller.guardFuture(() => widget.onLoadMore!.call());
+        }
+      },
       buildItem: buildItem,
       scrollController: scrollController,
       selectorType: widget.type,
@@ -223,7 +228,9 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   Future showSelector() async {
     if (controller.options.isEmpty || widget.refreshWhenShow) {
-      widget.onSearch?.call('');
+      if (widget.onSearch != null) {
+        controller.guardFuture(() => widget.onSearch!.call(''));
+      }
     }
     switch (widget.type) {
       case SelectorType.bottomSheet:
