@@ -82,25 +82,27 @@ class _MultipleSelectorTextFieldState<T>
                 .toList()
               ..add(
                 ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 48),
+                  constraints: const BoxConstraints(minWidth: 10),
                   child: IntrinsicWidth(
-                    child: TextField(
-                      controller: textController,
-                      focusNode: focus,
-                      readOnly:
-                          selector.widget.type == SelectorType.bottomSheet ||
-                              selector.widget.onSearch == null,
-                      onChanged: selector.widget.onSearch,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        hintText: selectedOptions.isEmpty
-                            ? widget.decoration.hintText
-                            : null,
-                        disabledBorder: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
+                    child: IgnorePointer(
+                      child: TextField(
+                        controller: textController,
+                        focusNode: focus,
+                        readOnly:
+                            selector.widget.type == SelectorType.bottomSheet ||
+                                selector.widget.onSearch == null,
+                        onChanged: selector.widget.onSearch,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          hintText: selectedOptions.isEmpty
+                              ? widget.decoration.hintText
+                              : null,
+                          disabledBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
                     ),
                   ),
