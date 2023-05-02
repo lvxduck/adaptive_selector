@@ -94,30 +94,36 @@ class _AdaptiveSelectorOptionsWidgetState<T>
                   widget.separatorBuilder ?? (_, __) => const SizedBox(),
             ),
           ),
-        if (widget.controller.loading)
+        if (widget.controller.error != null)
+          widget.errorBuilder?.call(context) ??
+              SizedBox(
+                height: 200,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error),
+                      Text(widget.controller.error.toString()),
+                    ],
+                  ),
+                ),
+              )
+        else if (widget.controller.loading)
           widget.loadingBuilder?.call(context) ??
               const ColoredBox(
                 color: Colors.white38,
                 child: Center(
                   child: CircularProgressIndicator(),
                 ),
-              ),
-        if (!widget.controller.loading && options.isEmpty)
+              )
+        else if (!widget.controller.loading && options.isEmpty)
           widget.emptyDataBuilder?.call(context) ??
               const SizedBox(
                 height: 100,
                 child: Center(
                   child: Text('No data'),
                 ),
-              ),
-        if (widget.controller.error)
-          widget.errorBuilder?.call(context) ??
-              const SizedBox(
-                height: 100,
-                child: Center(
-                  child: Icon(Icons.error),
-                ),
-              ),
+              )
       ],
     );
   }

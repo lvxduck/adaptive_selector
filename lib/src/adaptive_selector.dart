@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'adaptive_selector_controller.dart';
@@ -7,140 +8,196 @@ import 'models/adaptive_selector_option.dart';
 import 'models/selector_type.dart';
 import 'selectors/bottom_sheet_selector.dart';
 import 'selectors/menu_selector.dart';
+import 'widgets/adaptive_selector_field.dart';
 import 'widgets/adaptive_selector_multiple_field.dart';
 import 'widgets/adaptive_selector_options_container.dart';
 import 'widgets/adaptive_selector_tile.dart';
 
+/// An AdaptiveSelector provides a list of options for a user to select.
+///
+/// There are 2 types of selector:
+/// - Menu
+/// - BottomSheet
 class AdaptiveSelector<T> extends StatefulWidget {
   const AdaptiveSelector({
     Key? key,
+    this.initial,
+    required this.options,
+    this.isMultiple = false,
+    this.type = SelectorType.bottomSheet,
     this.onSearch,
     this.onChanged,
-    this.onMultipleChanged,
+    this.onLoadMore,
     this.decoration = const InputDecoration(),
     this.loading = false,
     this.allowClear = true,
     this.enable = true,
-    required this.options,
+    this.hasMoreData = false,
+    this.refreshWhenShow = false,
     this.itemBuilder,
-    this.initialOption,
-    this.type = SelectorType.bottomSheet,
-    this.bottomSheetTitle,
     this.separatorBuilder,
     this.loadingBuilder,
     this.errorBuilder,
     this.emptyDataBuilder,
+    this.fieldBuilder,
     this.debounceDuration = const Duration(milliseconds: 500),
+    this.bottomSheetSize = 0.5,
     this.maxMenuHeight = 260,
     this.minMenuWidth,
-    this.hasMoreData = false,
-    this.onLoadMore,
-    this.initialOptions,
-    this.isMultiple = false,
-    this.fieldBuilder,
-  }) : super(key: key);
+  })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
+        assert(
+          !(isMultiple == false && initial != null && initial.length > 1),
+          'initial options must has length <= 1 if selector is not isMultiple',
+        ),
+        super(key: key);
 
+  /// Determine the [SelectorType] type.
+  ///
+  /// Defaults to [SelectorType.bottomSheet]
   final SelectorType type;
+
+  /// Determine if the [AdaptiveSelector] is multiple or not.
   final bool isMultiple;
 
-  /// Initial selected option
-  final AdaptiveSelectorOption<T>? initialOption;
-  final List<AdaptiveSelectorOption<T>>? initialOptions;
+  /// The value used to for an initial options.
+  ///
+  /// Defaults to null.
+  final List<AdaptiveSelectorOption<T>>? initial;
+
+  /// The list of options the user can select.
   final List<AdaptiveSelectorOption<T>>? options;
 
-  // callbacks
-  final ValueChanged<String>? onSearch;
-  final ValueChanged<AdaptiveSelectorOption<T>?>? onChanged;
+  /// Called to fetch new options based on the keyword
+  final AsyncValueSetter<String>? onSearch;
 
-  /// For mode multiple
-  final ValueChanged<List<AdaptiveSelectorOption<T>>>? onMultipleChanged;
+  /// Called when the user select or remove an option.
+  final ValueChanged<List<AdaptiveSelectorOption<T>>>? onChanged;
 
   /// Using for loading infinity page
-  final VoidCallback? onLoadMore;
+  final AsyncCallback? onLoadMore;
 
-  // Widget builder
-  /// Builder Function for item
-  ///
-  /// Default is AdaptiveSelectorOption widget
+  /// The custom builder for option tile
   final Widget Function(
     AdaptiveSelectorOption<T> value,
     bool isSelected,
     VoidCallback onTap,
   )? itemBuilder;
+
+  /// The custom field builder widget for option
+  ///
+  /// Tips:
+  /// - Use the AdaptiveSelector.of(context) method to access methods such as showSelector and handleTextChange,
+  /// or properties such as type, enable, decoration, and so on.
+  /// - Take a look at [AdaptiveSelectorField]
   final Widget Function(
+    BuildContext context,
     AdaptiveSelectorController<T> controller,
-    ValueChanged<String>? onSearch,
-    VoidCallback onTap,
   )? fieldBuilder;
+
+  /// The separatorBuilder to custom list options UI
   final IndexedWidgetBuilder? separatorBuilder;
+
+  /// The custom loading builder
   final WidgetBuilder? loadingBuilder;
+
+  /// The custom error builder
   final WidgetBuilder? errorBuilder;
+
+  /// The custom empty data builder
   final WidgetBuilder? emptyDataBuilder;
 
-  // style
+  /// The input decoration of TextField
   final InputDecoration decoration;
+
+  /// Determine if the [AdaptiveSelector] is loading.
+  ///
+  /// Default to false
   final bool loading;
+
+  /// Determine if the [AdaptiveSelector] is allow to clear selected options
+  ///
+  /// Defaults to true
   final bool allowClear;
+
+  /// Determine if the [AdaptiveSelector] is enabled.
+  ///
+  /// Defaults to true.
   final bool enable;
+
+  /// Determine if the [AdaptiveSelector] is has more data to load.
+  ///
+  /// If true [onLoadMore] will be called to fetch more data.
+  ///
+  /// Defaults to true.
   final bool hasMoreData;
+
+  /// The debounce duration of textField to reduce text change event
+  ///
+  /// Defaults to 500 milliseconds
   final Duration debounceDuration;
 
-  // for menu selector
+  /// Determine if the [AdaptiveSelector] should refresh data when shown or continue to use old data.
+  ///
+  /// Defaults to false
+  final bool refreshWhenShow;
+
+  /// Determine the height of the menu selector.
+  ///
+  /// Default to 260
   final double maxMenuHeight;
+
+  /// The min width of menu selector
+  ///
+  /// If this is null, the width of the menu will be the same as the width of the selector field
   final double? minMenuWidth;
 
-  // for bottom sheet only
-  final String? bottomSheetTitle;
+  /// The fractional value of the screen height to use when
+  /// displaying the widget.
+  ///
+  /// The default value is `0.5`.
+  final double bottomSheetSize;
+
+  /// The data from the closest instance of this class that encloses the given
+  /// context.
+  ///
+  /// Typical usage of the [AdaptiveSelectorState.of] function is to customize
+  /// the AdaptiveSelectorFiled.
+  static AdaptiveSelectorState of(BuildContext context) {
+    return context.findAncestorStateOfType<AdaptiveSelectorState>()!;
+  }
 
   @override
   State<AdaptiveSelector<T>> createState() => AdaptiveSelectorState<T>();
 }
 
 class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
-  final textController = TextEditingController();
   Timer? _timer;
-
-  Set<AdaptiveSelectorOption<T>> get initialOptions => {
-        if (widget.isMultiple)
-          ...?widget.initialOptions
-        else if (widget.initialOption != null)
-          widget.initialOption!,
-      };
 
   late final controller = AdaptiveSelectorController<T>(
     options: widget.options ?? [],
-    selectedOptions: initialOptions,
+    selectedOptions: {...?widget.initial},
     loading: false,
     hasMore: widget.hasMoreData,
     isMultiple: widget.isMultiple,
-    enable: widget.enable,
   );
 
-  void debounceSearch(String value) {
+  void handleTextChange(String value) {
+    if (widget.onSearch == null) return;
     if (_timer != null) {
       _timer?.cancel();
     }
     _timer = Timer(
       widget.debounceDuration,
-      () => widget.onSearch?.call(value),
+      () {
+        controller.guardFuture(() => widget.onSearch!.call(value));
+      },
     );
   }
 
   @override
   void initState() {
-    if (!widget.isMultiple) {
-      textController.text = widget.initialOption?.label ?? '';
-    }
     controller.selectedOptionsNotifier.addListener(() {
-      final options = controller.selectedOptions;
-      if (widget.isMultiple) {
-        widget.onMultipleChanged?.call(options);
-      } else {
-        widget.onChanged?.call(options.isNotEmpty ? options.first : null);
-      }
-      if (!widget.isMultiple) {
-        textController.text = options.isNotEmpty ? options.first.label : '';
-      }
+      widget.onChanged?.call(controller.selectedOptions);
     });
     super.initState();
   }
@@ -152,8 +209,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       loading: widget.loading,
       hasMore: widget.hasMoreData,
       isMultiple: widget.isMultiple,
-      error: false,
-      enable: widget.enable,
     );
     super.didUpdateWidget(oldWidget);
   }
@@ -165,27 +220,36 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       errorBuilder: widget.errorBuilder,
       emptyDataBuilder: widget.emptyDataBuilder,
       separatorBuilder: widget.separatorBuilder,
-      onLoadMore: widget.onLoadMore,
+      onLoadMore: () {
+        if (widget.onLoadMore != null) {
+          controller.guardFuture(() => widget.onLoadMore!.call());
+        }
+      },
       buildItem: buildItem,
       scrollController: scrollController,
       selectorType: widget.type,
     );
   }
 
-  void showSelector() {
-    widget.onSearch?.call('');
+  Future showSelector() async {
+    if (controller.options.isEmpty || widget.refreshWhenShow) {
+      if (widget.onSearch != null) {
+        controller.guardFuture(() => widget.onSearch!.call(''));
+      }
+    }
     switch (widget.type) {
       case SelectorType.bottomSheet:
-        showBottomSheet();
-        break;
+        return showBottomSheet();
       case SelectorType.menu:
-        showMenu();
-        break;
+        return showMenu();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.fieldBuilder != null) {
+      return widget.fieldBuilder!.call(context, controller);
+    }
     final inputDecoration = widget.decoration.copyWith(
       filled: widget.decoration.filled ?? true,
       fillColor: widget.decoration.fillColor ??
@@ -213,27 +277,18 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           ),
     );
     if (widget.isMultiple) {
-      return widget.fieldBuilder
-              ?.call(controller, debounceSearch, showSelector) ??
-          MultipleSelectorTextField(
-            onTap: showSelector,
-            decoration: inputDecoration,
-            controller: controller,
-            onSearch: widget.onSearch != null ? debounceSearch : null,
-          );
+      return MultipleSelectorTextField(
+        decoration: inputDecoration,
+        controller: controller,
+      );
     }
-    return TextFormField(
-      controller: textController,
-      onChanged: debounceSearch,
-      onTap: showSelector,
-      readOnly:
-          widget.type == SelectorType.bottomSheet || widget.onSearch == null,
-      enabled: widget.enable,
+    return AdaptiveSelectorField(
       decoration: inputDecoration,
+      controller: controller,
     );
   }
 
-  void showBottomSheet() async {
+  Future showBottomSheet() async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -241,8 +296,9 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       backgroundColor: Colors.transparent,
       builder: (_) {
         return BottomSheetSelector<T>(
-          onSearch: widget.onSearch != null ? debounceSearch : null,
+          onSearch: widget.onSearch != null ? handleTextChange : null,
           decoration: widget.decoration,
+          bottomSheetSize: widget.bottomSheetSize,
           optionsBuilder: (context, controller) {
             return optionsWidget(scrollController: controller);
           },
@@ -252,8 +308,8 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
-  void showMenu() {
-    showMenuSelector(
+  Future showMenu() {
+    return showMenuSelector(
       context: context,
       minWidth: widget.minMenuWidth,
       builder: (context) {

@@ -78,13 +78,19 @@ class _DemoState extends State<Demo> {
       body: SingleChildScrollView(
         child: Center(
           child: Container(
-            padding: const EdgeInsets.all(32),
-            constraints: const BoxConstraints(maxWidth: 600),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            constraints: const BoxConstraints(maxWidth: 800),
             alignment: Alignment.center,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 12),
+                Builder(
+                  builder: (context) {
+                    return SizedBox(
+                      height: MediaQuery.of(context).padding.top + 12,
+                    );
+                  },
+                ),
                 Text(
                   'Adaptive selector',
                   style: Theme.of(context)
@@ -104,14 +110,17 @@ class _DemoState extends State<Demo> {
                       )
                       .toList(),
                   type: SelectorType.menu,
-                  initialOption: AdaptiveSelectorOption(
-                    label: SelectorType.menu.name,
-                    value: SelectorType.menu,
-                  ),
+                  initial: [
+                    AdaptiveSelectorOption(
+                      label: SelectorType.menu.name,
+                      value: SelectorType.menu,
+                    ),
+                  ],
+                  decoration: const InputDecoration(hintText: 'Select type'),
                   allowClear: false,
-                  onChanged: (option) {
+                  onChanged: (options) {
                     setState(() {
-                      selectorType = option!.value;
+                      selectorType = options.first.value;
                     });
                   },
                 ),

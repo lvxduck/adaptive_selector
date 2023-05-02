@@ -34,7 +34,7 @@ class _CustomSelectorState extends State<CustomSelector> {
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
-          initialOption: options.first,
+          initial: [options.first],
           maxMenuHeight: 320,
           decoration: InputDecoration(
             hintText: 'Select user',
@@ -54,15 +54,11 @@ class _CustomSelectorState extends State<CustomSelector> {
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
-          initialOptions: options.getRange(0, 5).toList(),
+          initial: options.getRange(0, 5).toList(),
           isMultiple: true,
           maxMenuHeight: 320,
-          fieldBuilder: (controller, onSearch, onTap) {
-            return CustomField(
-              controller: controller,
-              onTap: onTap,
-              onSearch: onSearch,
-            );
+          fieldBuilder: (_, controller) {
+            return CustomField(controller: controller);
           },
         ),
       ],
@@ -132,17 +128,14 @@ class PersonSelectorTile extends StatelessWidget {
 class CustomField extends StatelessWidget {
   const CustomField({
     Key? key,
-    required this.onTap,
     required this.controller,
-    this.onSearch,
   }) : super(key: key);
 
-  final VoidCallback onTap;
   final AdaptiveSelectorController<Person> controller;
-  final ValueChanged<String>? onSearch;
 
   @override
   Widget build(BuildContext context) {
+    final selector = AdaptiveSelector.of(context);
     return ValueListenableBuilder(
       valueListenable: controller.selectedOptionsNotifier,
       builder: (context, value, _) {
@@ -186,8 +179,9 @@ class CustomField extends StatelessWidget {
                   SizedBox(
                     width: 100,
                     child: TextField(
-                      onChanged: onSearch,
-                      onTap: onTap,
+                      onChanged: selector.handleTextChange,
+                      onTap: selector.showSelector,
+                      readOnly: selector.widget.onSearch == null,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         focusedBorder: InputBorder.none,

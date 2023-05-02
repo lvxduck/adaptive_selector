@@ -39,7 +39,7 @@ class _BasicUsageState extends State<BasicUsage> {
     return List.generate(20, (index) => faker.person);
   }
 
-  void handleSearch(value) async {
+  Future handleSearch(value) async {
     setState(() {
       loading = true;
     });
@@ -54,7 +54,7 @@ class _BasicUsageState extends State<BasicUsage> {
     });
   }
 
-  void handleLoadMore() async {
+  Future handleLoadMore() async {
     if (!hasMoreData) return;
     final data = await getList(filter);
     setState(() {
@@ -70,13 +70,14 @@ class _BasicUsageState extends State<BasicUsage> {
 
   bool enable = true;
   bool allowClear = true;
-  bool shouldShowMinMenuWidth = false;
-  bool shouldShowMaxMenuHeight = false;
-  bool shouldShowError = false;
+  bool refreshWhenShow = false;
+  bool showMinMenuWidth = false;
+  bool showError = false;
   bool multiple = false;
   bool searchAble = false;
   double minMenuWidth = 320;
-  double maxMenuHeight = 120;
+  double maxMenuHeight = 320;
+  double bottomSheetSize = 0.5;
 
   @override
   void initState() {
@@ -99,8 +100,13 @@ class _BasicUsageState extends State<BasicUsage> {
           title: const Text('Allow clear'),
         ),
         SwitchListTile(
-          value: shouldShowError,
-          onChanged: (value) => setState(() => shouldShowError = value),
+          value: refreshWhenShow,
+          onChanged: (value) => setState(() => refreshWhenShow = value),
+          title: const Text('Refresh when show'),
+        ),
+        SwitchListTile(
+          value: showError,
+          onChanged: (value) => setState(() => showError = value),
           title: const Text('Show error'),
         ),
         SwitchListTile(
@@ -118,24 +124,21 @@ class _BasicUsageState extends State<BasicUsage> {
             children: [
               Expanded(
                 child: Text(
-                  'Min menu width: ${shouldShowMinMenuWidth ? minMenuWidth.toInt().toString() : ''}',
+                  'Min menu width: ${showMinMenuWidth ? minMenuWidth.toInt().toString() : ''}',
                 ),
               ),
               Switch(
-                value: shouldShowMinMenuWidth,
-                onChanged: (value) =>
-                    setState(() => shouldShowMinMenuWidth = value),
+                value: showMinMenuWidth,
+                onChanged: (value) => setState(() => showMinMenuWidth = value),
               ),
             ],
           ),
-          horizontalTitleGap: 0,
-          subtitle: shouldShowMinMenuWidth
+          subtitle: showMinMenuWidth
               ? Slider(
                   value: minMenuWidth,
                   onChanged: (value) => setState(() => minMenuWidth = value),
                   min: 100,
                   max: 2000,
-                  divisions: 10,
                 )
               : null,
         ),
@@ -144,44 +147,58 @@ class _BasicUsageState extends State<BasicUsage> {
             children: [
               Expanded(
                 child: Text(
-                  'Max menu height: ${shouldShowMaxMenuHeight ? maxMenuHeight.toInt().toString() : ''}',
+                  'Max menu height: ${maxMenuHeight.toInt().toString()}',
                 ),
               ),
-              Switch(
-                value: shouldShowMaxMenuHeight,
-                onChanged: (value) =>
-                    setState(() => shouldShowMaxMenuHeight = value),
-              ),
-            ],
-          ),
-          horizontalTitleGap: 0,
-          subtitle: shouldShowMaxMenuHeight
-              ? Slider(
+              Expanded(
+                child: Slider(
                   value: maxMenuHeight,
                   onChanged: (value) => setState(() => maxMenuHeight = value),
                   min: 100,
                   max: 400,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ListTile(
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Bottom sheet size:${bottomSheetSize.toStringAsFixed(1)}',
+                ),
+              ),
+              Expanded(
+                child: Slider(
+                  value: bottomSheetSize,
+                  onChanged: (value) => setState(() => bottomSheetSize = value),
+                  min: 0.2,
+                  max: 1,
                   divisions: 10,
-                )
-              : null,
+                ),
+              ),
+            ],
+          ),
         ),
         AdaptiveSelector(
           options: userOptions,
           type: widget.selectorType,
-          // initialOption: userOptions.first,
           decoration: InputDecoration(
             hintText: 'Select user',
-            errorText: shouldShowError ? 'Error!' : null,
+            errorText: showError ? 'Error!' : null,
           ),
           enable: enable,
           allowClear: allowClear,
           isMultiple: multiple,
+          refreshWhenShow: refreshWhenShow,
           onSearch: searchAble ? handleSearch : null,
           loading: loading,
           hasMoreData: hasMoreData,
           onLoadMore: handleLoadMore,
-          minMenuWidth: shouldShowMinMenuWidth ? minMenuWidth : null,
-          maxMenuHeight: shouldShowMaxMenuHeight ? maxMenuHeight : 160,
+          minMenuWidth: showMinMenuWidth ? minMenuWidth : null,
+          maxMenuHeight: maxMenuHeight,
+          bottomSheetSize: bottomSheetSize,
         ),
       ],
     );
