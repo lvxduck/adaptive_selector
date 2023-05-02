@@ -36,7 +36,7 @@ class _AdaptiveSelectorOptionsWidgetState<T>
     extends State<AdaptiveSelectorOptionsWidget<T>> {
   bool handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollEndNotification) {
-      if (notification.metrics.extentAfter == 0) {
+      if (notification.metrics.extentAfter == 0 && widget.controller.hasMore) {
         widget.onLoadMore?.call();
       }
     }
