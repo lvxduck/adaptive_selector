@@ -1,3 +1,8 @@
+## 1.0.1
+* Fix disable multiple selector not working
+* Auto update textField when close menu selector
+* Enhance input decoration/ behaviour/ options builder
+
 ## 1.0.0
 
 * Support `multiple choice` selector by @lvxduck in [#1](https://github.com/lvxduck/adaptive_selector/pull/1)
