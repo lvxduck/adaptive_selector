@@ -13,6 +13,11 @@ import 'widgets/adaptive_selector_multiple_field.dart';
 import 'widgets/adaptive_selector_options_container.dart';
 import 'widgets/adaptive_selector_tile.dart';
 
+/// An AdaptiveSelector provides a list of options for a user to select.
+///
+/// There are 2 types of selector:
+/// - Menu
+/// - BottomSheet
 class AdaptiveSelector<T> extends StatefulWidget {
   const AdaptiveSelector({
     Key? key,
