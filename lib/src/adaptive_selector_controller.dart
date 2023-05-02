@@ -56,7 +56,11 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
     this.loading = loading;
     this.hasMore = hasMore;
     this.isMultiple = isMultiple;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        notifyListeners();
+      },
+    );
   }
 
   void guardFuture(Future Function() future) async {

@@ -34,29 +34,9 @@ class AdaptiveSelectorOptionsWidget<T> extends StatefulWidget {
 
 class _AdaptiveSelectorOptionsWidgetState<T>
     extends State<AdaptiveSelectorOptionsWidget<T>> {
-  @override
-  void initState() {
-    widget.controller.addListener(onChange);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(onChange);
-    super.dispose();
-  }
-
-  void onChange() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
-
   bool handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollEndNotification) {
-      if (notification.metrics.extentAfter == 0) {
+      if (notification.metrics.extentAfter == 0 && widget.controller.hasMore) {
         widget.onLoadMore?.call();
       }
     }
@@ -65,66 +45,72 @@ class _AdaptiveSelectorOptionsWidgetState<T>
 
   @override
   Widget build(BuildContext context) {
-    final options = widget.controller.options;
-    return Stack(
-      children: [
-        if (options.isNotEmpty)
-          NotificationListener<ScrollNotification>(
-            onNotification: handleScrollNotification,
-            child: ListView.separated(
-              shrinkWrap: true,
-              controller: widget.scrollController,
-              keyboardDismissBehavior:
-                  widget.selectorType == SelectorType.bottomSheet
-                      ? ScrollViewKeyboardDismissBehavior.onDrag
-                      : ScrollViewKeyboardDismissBehavior.manual,
-              itemCount: options.length + (widget.controller.hasMore ? 1 : 0),
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              itemBuilder: (_, index) {
-                if (index == options.length) {
-                  return Container(
-                    height: 64,
-                    alignment: Alignment.center,
-                    child: const CircularProgressIndicator(),
-                  );
-                }
-                return widget.buildItem(options[index]);
-              },
-              separatorBuilder:
-                  widget.separatorBuilder ?? (_, __) => const SizedBox(),
-            ),
-          ),
-        if (widget.controller.error != null)
-          widget.errorBuilder?.call(context) ??
-              SizedBox(
-                height: 200,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error),
-                      Text(widget.controller.error.toString()),
-                    ],
-                  ),
+    return AnimatedBuilder(
+      animation: widget.controller,
+      builder: (_, __) {
+        final options = widget.controller.options;
+        return Stack(
+          children: [
+            if (options.isNotEmpty)
+              NotificationListener<ScrollNotification>(
+                onNotification: handleScrollNotification,
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  controller: widget.scrollController,
+                  keyboardDismissBehavior:
+                      widget.selectorType == SelectorType.bottomSheet
+                          ? ScrollViewKeyboardDismissBehavior.onDrag
+                          : ScrollViewKeyboardDismissBehavior.manual,
+                  itemCount:
+                      options.length + (widget.controller.hasMore ? 1 : 0),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  itemBuilder: (_, index) {
+                    if (index == options.length) {
+                      return Container(
+                        height: 64,
+                        alignment: Alignment.center,
+                        child: const CircularProgressIndicator(),
+                      );
+                    }
+                    return widget.buildItem(options[index]);
+                  },
+                  separatorBuilder:
+                      widget.separatorBuilder ?? (_, __) => const SizedBox(),
                 ),
-              )
-        else if (widget.controller.loading)
-          widget.loadingBuilder?.call(context) ??
-              const ColoredBox(
-                color: Colors.white38,
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              )
-        else if (!widget.controller.loading && options.isEmpty)
-          widget.emptyDataBuilder?.call(context) ??
-              const SizedBox(
-                height: 100,
-                child: Center(
-                  child: Text('No data'),
-                ),
-              )
-      ],
+              ),
+            if (widget.controller.error != null)
+              widget.errorBuilder?.call(context) ??
+                  SizedBox(
+                    height: 200,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error),
+                          Text(widget.controller.error.toString()),
+                        ],
+                      ),
+                    ),
+                  )
+            else if (widget.controller.loading)
+              widget.loadingBuilder?.call(context) ??
+                  const ColoredBox(
+                    color: Colors.white38,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+            else if (!widget.controller.loading && options.isEmpty)
+              widget.emptyDataBuilder?.call(context) ??
+                  const SizedBox(
+                    height: 100,
+                    child: Center(
+                      child: Text('No data'),
+                    ),
+                  )
+          ],
+        );
+      },
     );
   }
 }
