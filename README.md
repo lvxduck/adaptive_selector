@@ -1,8 +1,8 @@
 <div align="center">
   <h1>adaptive_selector</h1>
   <div>
-    <a title="pub.dev" href="https://pub.dartlang.org/packages/fluent_ui" >
-      <img src="https://img.shields.io/pub/v/fluent_ui.svg?style=flat-square&include_prereleases&color=dc143c" />
+    <a title="pub.dev" href="https://pub.dev/packages/adaptive_selector" >
+      <img src="https://img.shields.io/pub/v/adaptive_selector.svg?style=flat-square&include_prereleases&color=dc143c" />
     </a>
     <a title="GitHub License" href="https://github.com/lvxduck/adaptive_selector/blob/master/LICENSE">
       <img src="https://img.shields.io/badge/License-MIT-yellow.svg" />
