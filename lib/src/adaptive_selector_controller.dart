@@ -25,18 +25,16 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
   bool isMultiple;
 
   void selectOption(AdaptiveSelectorOption<T> option) {
-    if (isMultiple) {
-      if (selectedOptionsNotifier.value.contains(option)) {
-        selectedOptionsNotifier.value =
-            selectedOptionsNotifier.value.where((e) => e != option).toSet();
-      } else {
-        selectedOptionsNotifier.value = {
-          ...selectedOptionsNotifier.value,
-          option
-        };
-      }
+    var options = selectedOptionsNotifier.value;
+    if (options.contains(option)) {
+      options = options.where((e) => e != option).toSet();
     } else {
-      selectedOptionsNotifier.value = {option};
+      options = {...options, option};
+    }
+    if (isMultiple) {
+      selectedOptionsNotifier.value = options;
+    } else {
+      selectedOptionsNotifier.value = options.isEmpty ? {} : {options.last};
     }
     notifyListeners();
   }
