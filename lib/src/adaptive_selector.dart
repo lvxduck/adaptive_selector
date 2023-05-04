@@ -34,6 +34,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.enable = true,
     this.hasMoreData = false,
     this.refreshWhenShow = false,
+    this.useRootNavigator = false,
     this.itemBuilder,
     this.separatorBuilder,
     this.loadingBuilder,
@@ -130,6 +131,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
   ///
   /// Defaults to true.
   final bool hasMoreData;
+
+  /// The value that will pass to showModalBottomSheet function
+  final bool useRootNavigator;
 
   /// The debounce duration of textField to reduce text change event
   ///
@@ -292,7 +296,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      useRootNavigator: true,
+      useRootNavigator: widget.useRootNavigator,
       backgroundColor: Colors.transparent,
       builder: (_) {
         return BottomSheetSelector<T>(
