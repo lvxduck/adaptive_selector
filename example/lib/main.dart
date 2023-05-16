@@ -128,7 +128,6 @@ class _DemoState extends State<Demo> {
                 BasicUsage(
                   selectorType: selectorType,
                 ),
-                const Label('Custom'),
                 CustomSelector(
                   selectorType: selectorType,
                 ),
@@ -184,7 +183,7 @@ class Label extends StatelessWidget {
         data,
         style: TextStyle(
           color: Theme.of(context).primaryColor,
-          fontSize: 16,
+          fontSize: 18,
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:adaptive_selector/adaptive_selector.dart';
+import 'package:example/main.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +32,7 @@ class _CustomSelectorState extends State<CustomSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const Label('Custom decoration'),
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
@@ -50,7 +52,7 @@ class _CustomSelectorState extends State<CustomSelector> {
             );
           },
         ),
-        const SizedBox(height: 16),
+        const Label('Custom fieldBuilder'),
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
@@ -59,6 +61,59 @@ class _CustomSelectorState extends State<CustomSelector> {
           maxMenuHeight: 320,
           fieldBuilder: (_, controller) {
             return CustomField(controller: controller);
+          },
+        ),
+        const Label('Custom bottomSheetBuilder'),
+        AdaptiveSelector<Person>(
+          options: options,
+          type: widget.selectorType,
+          initial: [options.first],
+          onSearch: (_) async {},
+          bottomSheetBuilder: (context, options) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 60),
+              child: Material(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 6,
+                      width: 64,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Select user',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: TextFormField(
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(
+                            Icons.search,
+                            size: 24,
+                          ),
+                          contentPadding: EdgeInsets.only(right: 16),
+                          hintText: 'Search',
+                        ),
+                      ),
+                    ),
+                    Expanded(child: options),
+                  ],
+                ),
+              ),
+            );
           },
         ),
       ],
