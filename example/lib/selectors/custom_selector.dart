@@ -63,12 +63,11 @@ class _CustomSelectorState extends State<CustomSelector> {
             return CustomField(controller: controller);
           },
         ),
-        const Label('Custom bottomSheetBuilder'),
+        const Label('Custom bottom sheet'),
         AdaptiveSelector<Person>(
           options: options,
           type: widget.selectorType,
           initial: [options.first],
-          onSearch: (_) async {},
           bottomSheetBuilder: (context, options) {
             return Padding(
               padding: const EdgeInsets.only(top: 60),
@@ -113,6 +112,23 @@ class _CustomSelectorState extends State<CustomSelector> {
                   ],
                 ),
               ),
+            );
+          },
+        ),
+        const Label('Custom menu'),
+        AdaptiveSelector<Person>(
+          options: options,
+          type: SelectorType.menu,
+          initial: [options.first],
+          menuBuilder: (context, options) {
+            return Material(
+              elevation: 3,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(color: Theme.of(context).primaryColor),
+              ),
+              child: options,
             );
           },
         ),

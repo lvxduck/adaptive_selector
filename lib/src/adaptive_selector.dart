@@ -13,7 +13,7 @@ import 'widgets/adaptive_selector_multiple_field.dart';
 import 'widgets/adaptive_selector_options_container.dart';
 import 'widgets/adaptive_selector_tile.dart';
 
-typedef BottomSheetBuilder = Widget Function(BuildContext, Widget options);
+typedef SelectorBuilder = Widget Function(BuildContext, Widget options);
 
 /// An AdaptiveSelector provides a list of options for a user to select.
 ///
@@ -49,6 +49,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.minMenuWidth,
     this.bottomSheetBuilder,
     this.menuBehavior = HitTestBehavior.opaque,
+    this.menuBuilder,
   })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
         assert(
           !(isMultiple == false && initial != null && initial.length > 1),
@@ -112,7 +113,10 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final WidgetBuilder? emptyDataBuilder;
 
   /// The custom builder for bottomSheet UI
-  final BottomSheetBuilder? bottomSheetBuilder;
+  final SelectorBuilder? bottomSheetBuilder;
+
+  /// The custom builder for bottomSheet UI
+  final SelectorBuilder? menuBuilder;
 
   /// The input decoration of TextField
   final InputDecoration decoration;
@@ -332,6 +336,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       builder: (context) {
         return MenuSelector(
           maxHeight: widget.maxMenuHeight,
+          menuBuilder: widget.menuBuilder,
           optionsBuilder: (context) {
             return optionsWidget();
           },

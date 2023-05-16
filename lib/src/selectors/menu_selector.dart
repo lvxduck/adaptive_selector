@@ -1,6 +1,8 @@
 import 'package:adaptive_selector/src/extensions/context_extension.dart';
 import 'package:flutter/material.dart';
 
+import '../../adaptive_selector.dart';
+
 Future<T?> showMenuSelector<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -27,25 +29,29 @@ class MenuSelector<T> extends StatelessWidget {
     Key? key,
     required this.optionsBuilder,
     required this.maxHeight,
+    this.menuBuilder,
   }) : super(key: key);
 
   final WidgetBuilder optionsBuilder;
   final double maxHeight;
+  final SelectorBuilder? menuBuilder;
 
   @override
   Widget build(BuildContext context) {
+    final options = optionsBuilder(context);
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxHeight: maxHeight,
         minWidth: 320,
       ),
-      child: Material(
-        elevation: 3,
-        clipBehavior: Clip.hardEdge,
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        child: optionsBuilder(context),
-      ),
+      child: menuBuilder?.call(context, options) ??
+          Material(
+            elevation: 3,
+            clipBehavior: Clip.hardEdge,
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            child: options,
+          ),
     );
   }
 }

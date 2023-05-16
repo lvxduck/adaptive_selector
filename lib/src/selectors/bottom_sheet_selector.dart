@@ -16,7 +16,7 @@ class BottomSheetSelector<T> extends StatelessWidget {
   final ScrollableWidgetBuilder optionsBuilder;
   final InputDecoration? decoration;
   final double bottomSheetSize;
-  final BottomSheetBuilder? bottomSheetBuilder;
+  final SelectorBuilder? bottomSheetBuilder;
 
   @override
   Widget build(BuildContext context) {
