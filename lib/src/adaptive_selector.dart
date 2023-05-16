@@ -13,6 +13,8 @@ import 'widgets/adaptive_selector_multiple_field.dart';
 import 'widgets/adaptive_selector_options_container.dart';
 import 'widgets/adaptive_selector_tile.dart';
 
+typedef BottomSheetBuilder = Widget Function(BuildContext, Widget options);
+
 /// An AdaptiveSelector provides a list of options for a user to select.
 ///
 /// There are 2 types of selector:
@@ -45,6 +47,8 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.bottomSheetSize = 0.5,
     this.maxMenuHeight = 260,
     this.minMenuWidth,
+    this.bottomSheetBuilder,
+    this.menuBehavior = HitTestBehavior.opaque,
   })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
         assert(
           !(isMultiple == false && initial != null && initial.length > 1),
@@ -107,6 +111,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
   /// The custom empty data builder
   final WidgetBuilder? emptyDataBuilder;
 
+  /// The custom builder for bottomSheet UI
+  final BottomSheetBuilder? bottomSheetBuilder;
+
   /// The input decoration of TextField
   final InputDecoration decoration;
 
@@ -160,6 +167,10 @@ class AdaptiveSelector<T> extends StatefulWidget {
   ///
   /// The default value is `0.5`.
   final double bottomSheetSize;
+
+  /// Determine the [HitTestBehavior] of the menu selector.
+  /// Default to [HitTestBehavior.opaque]
+  final HitTestBehavior menuBehavior;
 
   /// The data from the closest instance of this class that encloses the given
   /// context.
@@ -303,6 +314,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
           onSearch: widget.onSearch != null ? handleTextChange : null,
           decoration: widget.decoration,
           bottomSheetSize: widget.bottomSheetSize,
+          bottomSheetBuilder: widget.bottomSheetBuilder,
           optionsBuilder: (context, controller) {
             return optionsWidget(scrollController: controller);
           },
@@ -316,6 +328,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     return showMenuSelector(
       context: context,
       minWidth: widget.minMenuWidth,
+      behavior: widget.menuBehavior,
       builder: (context) {
         return MenuSelector(
           maxHeight: widget.maxMenuHeight,

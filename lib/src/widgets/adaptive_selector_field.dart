@@ -49,7 +49,9 @@ class _AdaptiveSelectorFieldState<T> extends State<AdaptiveSelectorField<T>> {
       controller: textController,
       onChanged: selector.handleTextChange,
       onTap: () async {
-        textController.clear();
+        if (selector.widget.onSearch != null) {
+          textController.clear();
+        }
         await selector.showSelector();
         updateTextField();
       },

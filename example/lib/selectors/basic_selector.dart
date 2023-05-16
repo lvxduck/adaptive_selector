@@ -75,6 +75,10 @@ class _BasicUsageState extends State<BasicUsage> {
   bool showError = false;
   bool multiple = false;
   bool searchAble = false;
+  var menuBehavior = AdaptiveSelectorOption(
+    label: 'translucent',
+    value: HitTestBehavior.translucent,
+  );
   double minMenuWidth = 320;
   double maxMenuHeight = 320;
   double bottomSheetSize = 0.5;
@@ -118,6 +122,37 @@ class _BasicUsageState extends State<BasicUsage> {
           value: searchAble,
           onChanged: (value) => setState(() => searchAble = value),
           title: const Text('Searchable'),
+        ),
+        ListTile(
+          title: Row(
+            children: [
+              const Text('Menu behavior'),
+              const Spacer(),
+              SizedBox(
+                width: 160,
+                child: AdaptiveSelector<HitTestBehavior>(
+                  type: SelectorType.menu,
+                  allowClear: false,
+                  initial: [menuBehavior],
+                  options: [
+                    AdaptiveSelectorOption(
+                      label: 'translucent',
+                      value: HitTestBehavior.translucent,
+                    ),
+                    AdaptiveSelectorOption(
+                      label: 'opaque',
+                      value: HitTestBehavior.opaque,
+                    ),
+                  ],
+                  onChanged: (options) {
+                    setState(() {
+                      menuBehavior = options.first;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
         ListTile(
           title: Row(
@@ -199,6 +234,7 @@ class _BasicUsageState extends State<BasicUsage> {
           minMenuWidth: showMinMenuWidth ? minMenuWidth : null,
           maxMenuHeight: maxMenuHeight,
           bottomSheetSize: bottomSheetSize,
+          menuBehavior: menuBehavior.value,
         ),
       ],
     );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 Future<T?> showMenuSelector<T>({
   required BuildContext context,
   required WidgetBuilder builder,
+  required HitTestBehavior behavior,
   double? minWidth,
 }) {
   final navigator = Navigator.of(context);
@@ -11,6 +12,7 @@ Future<T?> showMenuSelector<T>({
     _OverlayMenuRoute<T>(
       menuContext: context,
       minWidth: minWidth,
+      behavior: behavior,
       capturedThemes: InheritedTheme.capture(
         from: context,
         to: navigator.context,
@@ -54,10 +56,12 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
   final Widget child;
   final CapturedThemes capturedThemes;
   final double? minWidth;
+  final HitTestBehavior behavior;
 
   _OverlayMenuRoute({
     required this.menuContext,
     required this.capturedThemes,
+    required this.behavior,
     required this.child,
     this.minWidth,
   });
@@ -74,7 +78,7 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
           }
 
           return Listener(
-            behavior: HitTestBehavior.translucent,
+            behavior: behavior,
             onPointerDown: (_) => popAndUnFocus(),
             onPointerSignal: (_) => popAndUnFocus(),
           );
