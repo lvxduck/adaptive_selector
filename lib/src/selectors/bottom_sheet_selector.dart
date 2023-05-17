@@ -5,21 +5,16 @@ import '../../adaptive_selector.dart';
 class BottomSheetSelector<T> extends StatelessWidget {
   const BottomSheetSelector({
     Key? key,
-    required this.optionsBuilder,
-    this.onSearch,
-    this.decoration,
-    required this.bottomSheetSize,
-    this.bottomSheetBuilder,
+    required this.selector,
   }) : super(key: key);
 
-  final ValueChanged<String>? onSearch;
-  final ScrollableWidgetBuilder optionsBuilder;
-  final InputDecoration? decoration;
-  final double bottomSheetSize;
-  final SelectorBuilder? bottomSheetBuilder;
+  final AdaptiveSelectorState<T> selector;
 
   @override
   Widget build(BuildContext context) {
+    final onSearch = selector.widget.onSearch;
+    final decoration = selector.widget.decoration;
+    final bottomSheetSize = selector.widget.bottomSheetSize;
     return Stack(
       children: [
         GestureDetector(
@@ -32,8 +27,11 @@ class BottomSheetSelector<T> extends StatelessWidget {
           snap: true,
           snapAnimationDuration: const Duration(milliseconds: 200),
           builder: (context, controller) {
-            final options = optionsBuilder(context, controller);
-            return bottomSheetBuilder?.call(context, options) ??
+            final options = selector.buildOptionsWidget(
+              scrollController: controller,
+            );
+            return selector.widget.bottomSheetBuilder
+                    ?.call(context, options, selector) ??
                 Padding(
                   padding: const EdgeInsets.only(top: 60),
                   child: Material(
@@ -66,14 +64,14 @@ class BottomSheetSelector<T> extends StatelessWidget {
                                 ),
                                 contentPadding:
                                     const EdgeInsets.only(right: 16),
-                                hintText: decoration?.hintText,
+                                hintText: decoration.hintText,
                               ),
-                              onChanged: onSearch,
+                              onChanged: selector.handleTextChange,
                             ),
                           )
                         else ...[
                           Text(
-                            decoration?.hintText ?? 'Select',
+                            decoration.hintText ?? 'Select',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,

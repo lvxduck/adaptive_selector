@@ -18,7 +18,7 @@ class CustomSelector extends StatefulWidget {
 class _CustomSelectorState extends State<CustomSelector> {
   final faker = Faker();
 
-  late final options = List.generate(10, (index) => faker.person)
+  late final options = List.generate(30, (index) => faker.person)
       .map(
         (e) => AdaptiveSelectorOption(
           label: e.name(),
@@ -44,11 +44,10 @@ class _CustomSelectorState extends State<CustomSelector> {
             fillColor: Colors.green.withOpacity(0.2),
             suffixIcon: const Icon(Icons.lock_clock),
           ),
-          itemBuilder: (option, selected, onTap) {
+          itemBuilder: (_, option, selector) {
             return PersonSelectorTile(
-              onTap: onTap,
               option: option,
-              isSelected: selected,
+              selector: selector,
             );
           },
         ),
@@ -59,16 +58,16 @@ class _CustomSelectorState extends State<CustomSelector> {
           initial: options.getRange(0, 5).toList(),
           isMultiple: true,
           maxMenuHeight: 320,
-          fieldBuilder: (_, controller) {
-            return CustomField(controller: controller);
+          fieldBuilder: (_, selector) {
+            return CustomField(selector: selector);
           },
         ),
         const Label('Custom bottom sheet'),
         AdaptiveSelector<Person>(
           options: options,
-          type: widget.selectorType,
+          type: SelectorType.bottomSheet,
           initial: [options.first],
-          bottomSheetBuilder: (context, options) {
+          bottomSheetBuilder: (context, options, selector) {
             return Padding(
               padding: const EdgeInsets.only(top: 60),
               child: Material(
@@ -120,7 +119,7 @@ class _CustomSelectorState extends State<CustomSelector> {
           options: options,
           type: SelectorType.menu,
           initial: [options.first],
-          menuBuilder: (context, options) {
+          menuBuilder: (context, options, selector) {
             return Material(
               elevation: 3,
               color: Colors.white,
@@ -141,21 +140,21 @@ class PersonSelectorTile extends StatelessWidget {
   const PersonSelectorTile({
     Key? key,
     required this.option,
-    required this.isSelected,
-    required this.onTap,
+    required this.selector,
   }) : super(key: key);
 
   final AdaptiveSelectorOption<Person> option;
-  final bool isSelected;
-  final VoidCallback onTap;
+  final AdaptiveSelectorState<Person> selector;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        selector.handleTapOption(option);
+      },
       child: Container(
         height: 52,
-        color: isSelected
+        color: selector.isSelected(option)
             ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
             : null,
         alignment: Alignment.centerLeft,
@@ -199,14 +198,14 @@ class PersonSelectorTile extends StatelessWidget {
 class CustomField extends StatelessWidget {
   const CustomField({
     Key? key,
-    required this.controller,
+    required this.selector,
   }) : super(key: key);
 
-  final AdaptiveSelectorController<Person> controller;
+  final AdaptiveSelectorState<Person> selector;
 
   @override
   Widget build(BuildContext context) {
-    final selector = AdaptiveSelector.of(context);
+    final controller = selector.controller;
     return ValueListenableBuilder(
       valueListenable: controller.selectedOptionsNotifier,
       builder: (context, value, _) {

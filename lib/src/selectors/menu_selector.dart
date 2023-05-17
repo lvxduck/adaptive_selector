@@ -27,24 +27,20 @@ Future<T?> showMenuSelector<T>({
 class MenuSelector<T> extends StatelessWidget {
   const MenuSelector({
     Key? key,
-    required this.optionsBuilder,
-    required this.maxHeight,
-    this.menuBuilder,
+    required this.selector,
   }) : super(key: key);
 
-  final WidgetBuilder optionsBuilder;
-  final double maxHeight;
-  final SelectorBuilder? menuBuilder;
+  final AdaptiveSelectorState<T> selector;
 
   @override
   Widget build(BuildContext context) {
-    final options = optionsBuilder(context);
+    final options = selector.buildOptionsWidget();
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: maxHeight,
+        maxHeight: selector.widget.maxMenuHeight,
         minWidth: 320,
       ),
-      child: menuBuilder?.call(context, options) ??
+      child: selector.widget.menuBuilder?.call(context, options, selector) ??
           Material(
             elevation: 3,
             clipBehavior: Clip.hardEdge,
