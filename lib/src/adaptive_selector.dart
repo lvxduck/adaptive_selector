@@ -213,7 +213,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   late final controller = AdaptiveSelectorController<T>(
     options: widget.options ?? [],
-    selectedOptions: {...?widget.initial},
+    selectedOptions: [...?widget.initial],
     loading: false,
     hasMore: widget.hasMoreData,
     isMultiple: widget.isMultiple,
@@ -314,7 +314,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     }
     final inputDecoration = widget.decoration.copyWith(
       suffixIcon: widget.decoration.suffixIcon ??
-          ValueListenableBuilder<Set<AdaptiveSelectorOption<T>>>(
+          ValueListenableBuilder<List<AdaptiveSelectorOption<T>>>(
             valueListenable: controller.selectedOptionsNotifier,
             builder: (_, selectedOption, ___) {
               if (selectedOption.isNotEmpty && widget.allowClear) {

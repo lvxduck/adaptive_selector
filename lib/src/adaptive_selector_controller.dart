@@ -5,7 +5,7 @@ import '../adaptive_selector.dart';
 class AdaptiveSelectorController<T> extends ChangeNotifier {
   AdaptiveSelectorController({
     required this.options,
-    required Set<AdaptiveSelectorOption<T>> selectedOptions,
+    required List<AdaptiveSelectorOption<T>> selectedOptions,
     required this.loading,
     required this.hasMore,
     required this.isMultiple,
@@ -14,10 +14,10 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
   }
 
   List<AdaptiveSelectorOption<T>> options;
-  late ValueNotifier<Set<AdaptiveSelectorOption<T>>> selectedOptionsNotifier;
+  late ValueNotifier<List<AdaptiveSelectorOption<T>>> selectedOptionsNotifier;
 
   List<AdaptiveSelectorOption<T>> get selectedOptions =>
-      selectedOptionsNotifier.value.toList();
+      selectedOptionsNotifier.value;
 
   bool loading;
   Object? error;
@@ -27,20 +27,20 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
   void selectOption(AdaptiveSelectorOption<T> option) {
     var options = selectedOptionsNotifier.value;
     if (options.contains(option)) {
-      options = options.where((e) => e != option).toSet();
+      options = options.where((e) => e != option).toList();
     } else {
-      options = {...options, option};
+      options = [...options, option];
     }
     if (isMultiple) {
       selectedOptionsNotifier.value = options;
     } else {
-      selectedOptionsNotifier.value = options.isEmpty ? {} : {options.last};
+      selectedOptionsNotifier.value = options.isEmpty ? [] : [options.last];
     }
     notifyListeners();
   }
 
   void clearSelectedOption() {
-    selectedOptionsNotifier.value = {};
+    selectedOptionsNotifier.value = [];
     notifyListeners();
   }
 
