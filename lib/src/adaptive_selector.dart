@@ -11,7 +11,32 @@ import 'selectors/menu_selector.dart';
 import 'widgets/adaptive_selector_field.dart';
 import 'widgets/adaptive_selector_multiple_field.dart';
 import 'widgets/adaptive_selector_options_container.dart';
-import 'widgets/adaptive_selector_tile.dart';
+
+/// Signature for a function that creates a selector
+///
+/// Used by [AdaptiveSelector.menuBuilder], [AdaptiveSelector.bottomSheetBuilder]
+typedef SelectorBuilder<T> = Widget Function(
+  BuildContext context,
+  Widget child,
+  AdaptiveSelectorState<T> selector,
+);
+
+/// Signature for a function that creates a selector field
+///
+/// Used by [AdaptiveSelector.fieldBuilder]
+typedef SelectorFieldBuilder<T> = Widget Function(
+  BuildContext context,
+  AdaptiveSelectorState<T> selector,
+);
+
+/// Signature for a function that creates a selector item
+///
+/// Used by [AdaptiveSelector.itemBuilder]
+typedef SelectorItemBuilder<T> = Widget Function(
+  BuildContext context,
+  AdaptiveSelectorOption<T> option,
+  AdaptiveSelectorState<T> selector,
+);
 
 /// An AdaptiveSelector provides a list of options for a user to select.
 ///
@@ -42,9 +67,12 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.emptyDataBuilder,
     this.fieldBuilder,
     this.debounceDuration = const Duration(milliseconds: 500),
-    this.bottomSheetSize = 0.5,
+    this.bottomSheetSize = 0.6,
     this.maxMenuHeight = 260,
     this.minMenuWidth,
+    this.bottomSheetBuilder,
+    this.menuBehavior = HitTestBehavior.opaque,
+    this.menuBuilder,
   })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
         assert(
           !(isMultiple == false && initial != null && initial.length > 1),
@@ -78,11 +106,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
   final AsyncCallback? onLoadMore;
 
   /// The custom builder for option tile
-  final Widget Function(
-    AdaptiveSelectorOption<T> value,
-    bool isSelected,
-    VoidCallback onTap,
-  )? itemBuilder;
+  final SelectorItemBuilder<T>? itemBuilder;
 
   /// The custom field builder widget for option
   ///
@@ -90,10 +114,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
   /// - Use the AdaptiveSelector.of(context) method to access methods such as showSelector and handleTextChange,
   /// or properties such as type, enable, decoration, and so on.
   /// - Take a look at [AdaptiveSelectorField]
-  final Widget Function(
-    BuildContext context,
-    AdaptiveSelectorController<T> controller,
-  )? fieldBuilder;
+  final SelectorFieldBuilder<T>? fieldBuilder;
 
   /// The separatorBuilder to custom list options UI
   final IndexedWidgetBuilder? separatorBuilder;
@@ -106,6 +127,12 @@ class AdaptiveSelector<T> extends StatefulWidget {
 
   /// The custom empty data builder
   final WidgetBuilder? emptyDataBuilder;
+
+  /// The custom builder for bottomSheet UI
+  final SelectorBuilder<T>? bottomSheetBuilder;
+
+  /// The custom builder for bottomSheet UI
+  final SelectorBuilder<T>? menuBuilder;
 
   /// The input decoration of TextField
   final InputDecoration decoration;
@@ -161,6 +188,10 @@ class AdaptiveSelector<T> extends StatefulWidget {
   /// The default value is `0.5`.
   final double bottomSheetSize;
 
+  /// Determine the [HitTestBehavior] of the menu selector.
+  /// Default to [HitTestBehavior.opaque]
+  final HitTestBehavior menuBehavior;
+
   /// The data from the closest instance of this class that encloses the given
   /// context.
   ///
@@ -176,6 +207,9 @@ class AdaptiveSelector<T> extends StatefulWidget {
 
 class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   Timer? _timer;
+
+  bool isSelected(AdaptiveSelectorOption<T> option) =>
+      controller.selectedOptions.contains(option);
 
   late final controller = AdaptiveSelectorController<T>(
     options: widget.options ?? [],
@@ -217,25 +251,15 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     super.didUpdateWidget(oldWidget);
   }
 
-  Widget optionsWidget({ScrollController? scrollController}) {
+  Widget buildOptionsWidget({ScrollController? scrollController}) {
     return AdaptiveSelectorOptionsWidget<T>(
-      controller: controller,
-      loadingBuilder: widget.loadingBuilder,
-      errorBuilder: widget.errorBuilder,
-      emptyDataBuilder: widget.emptyDataBuilder,
-      separatorBuilder: widget.separatorBuilder,
-      onLoadMore: () {
-        if (widget.onLoadMore != null) {
-          controller.guardFuture(() => widget.onLoadMore!.call());
-        }
-      },
-      buildItem: buildItem,
       scrollController: scrollController,
-      selectorType: widget.type,
+      selector: this,
     );
   }
 
-  Future showSelector() async {
+  /// Show selector based on [SelectorType]
+  Future<void> showSelector() async {
     if (controller.options.isEmpty || widget.refreshWhenShow) {
       if (widget.onSearch != null) {
         controller.guardFuture(() => widget.onSearch!.call(''));
@@ -249,15 +273,46 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     }
   }
 
+  /// Show the BottomSheet selector
+  Future<void> showBottomSheet() async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: widget.useRootNavigator,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return BottomSheetSelector<T>(selector: this);
+      },
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  /// Show the menu selector
+  Future<void> showMenu() {
+    return showMenuSelector(
+      context: context,
+      minWidth: widget.minMenuWidth,
+      behavior: widget.menuBehavior,
+      builder: (context) {
+        return MenuSelector(selector: this);
+      },
+    );
+  }
+
+  void handleTapOption(AdaptiveSelectorOption<T> option) {
+    if (!widget.isMultiple) {
+      Navigator.of(context).pop();
+      FocusManager.instance.primaryFocus?.unfocus();
+    }
+    controller.selectOption(option);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.fieldBuilder != null) {
-      return widget.fieldBuilder!.call(context, controller);
+      return widget.fieldBuilder!.call(context, this);
     }
     final inputDecoration = widget.decoration.copyWith(
-      filled: widget.decoration.filled ?? true,
-      fillColor: widget.decoration.fillColor ??
-          (widget.enable ? widget.decoration.fillColor : Colors.grey[200]),
       suffixIcon: widget.decoration.suffixIcon ??
           ValueListenableBuilder<Set<AdaptiveSelectorOption<T>>>(
             valueListenable: controller.selectedOptionsNotifier,
@@ -290,58 +345,5 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       decoration: inputDecoration,
       controller: controller,
     );
-  }
-
-  Future showBottomSheet() async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: widget.useRootNavigator,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return BottomSheetSelector<T>(
-          onSearch: widget.onSearch != null ? handleTextChange : null,
-          decoration: widget.decoration,
-          bottomSheetSize: widget.bottomSheetSize,
-          optionsBuilder: (context, controller) {
-            return optionsWidget(scrollController: controller);
-          },
-        );
-      },
-    );
-    FocusManager.instance.primaryFocus?.unfocus();
-  }
-
-  Future showMenu() {
-    return showMenuSelector(
-      context: context,
-      minWidth: widget.minMenuWidth,
-      builder: (context) {
-        return MenuSelector(
-          maxHeight: widget.maxMenuHeight,
-          optionsBuilder: (context) {
-            return optionsWidget();
-          },
-        );
-      },
-    );
-  }
-
-  Widget buildItem(AdaptiveSelectorOption<T> option) {
-    onTap() {
-      if (!widget.isMultiple) {
-        Navigator.of(context).pop();
-        FocusManager.instance.primaryFocus?.unfocus();
-      }
-      controller.selectOption(option);
-    }
-
-    final isSelected = controller.selectedOptions.contains(option);
-    return widget.itemBuilder?.call(option, isSelected, onTap) ??
-        AdaptiveSelectorTile(
-          option: option,
-          isSelected: isSelected,
-          onTap: onTap,
-        );
   }
 }

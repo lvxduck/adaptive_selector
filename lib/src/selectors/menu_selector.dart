@@ -1,9 +1,12 @@
 import 'package:adaptive_selector/src/extensions/context_extension.dart';
 import 'package:flutter/material.dart';
 
+import '../../adaptive_selector.dart';
+
 Future<T?> showMenuSelector<T>({
   required BuildContext context,
   required WidgetBuilder builder,
+  required HitTestBehavior behavior,
   double? minWidth,
 }) {
   final navigator = Navigator.of(context);
@@ -11,6 +14,7 @@ Future<T?> showMenuSelector<T>({
     _OverlayMenuRoute<T>(
       menuContext: context,
       minWidth: minWidth,
+      behavior: behavior,
       capturedThemes: InheritedTheme.capture(
         from: context,
         to: navigator.context,
@@ -23,27 +27,27 @@ Future<T?> showMenuSelector<T>({
 class MenuSelector<T> extends StatelessWidget {
   const MenuSelector({
     Key? key,
-    required this.optionsBuilder,
-    required this.maxHeight,
+    required this.selector,
   }) : super(key: key);
 
-  final WidgetBuilder optionsBuilder;
-  final double maxHeight;
+  final AdaptiveSelectorState<T> selector;
 
   @override
   Widget build(BuildContext context) {
+    final options = selector.buildOptionsWidget();
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: maxHeight,
+        maxHeight: selector.widget.maxMenuHeight,
         minWidth: 320,
       ),
-      child: Material(
-        elevation: 3,
-        clipBehavior: Clip.hardEdge,
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        child: optionsBuilder(context),
-      ),
+      child: selector.widget.menuBuilder?.call(context, options, selector) ??
+          Material(
+            elevation: 3,
+            clipBehavior: Clip.hardEdge,
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            child: options,
+          ),
     );
   }
 }
@@ -54,10 +58,12 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
   final Widget child;
   final CapturedThemes capturedThemes;
   final double? minWidth;
+  final HitTestBehavior behavior;
 
   _OverlayMenuRoute({
     required this.menuContext,
     required this.capturedThemes,
+    required this.behavior,
     required this.child,
     this.minWidth,
   });
@@ -74,7 +80,7 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
           }
 
           return Listener(
-            behavior: HitTestBehavior.translucent,
+            behavior: behavior,
             onPointerDown: (_) => popAndUnFocus(),
             onPointerSignal: (_) => popAndUnFocus(),
           );
