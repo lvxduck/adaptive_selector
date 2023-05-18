@@ -313,9 +313,6 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
       return widget.fieldBuilder!.call(context, this);
     }
     final inputDecoration = widget.decoration.copyWith(
-      filled: widget.decoration.filled ?? true,
-      fillColor: widget.decoration.fillColor ??
-          (widget.enable ? widget.decoration.fillColor : Colors.grey[200]),
       suffixIcon: widget.decoration.suffixIcon ??
           ValueListenableBuilder<Set<AdaptiveSelectorOption<T>>>(
             valueListenable: controller.selectedOptionsNotifier,

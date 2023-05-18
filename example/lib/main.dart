@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.white,
         tabBarTheme: TabBarTheme(
           unselectedLabelColor: Colors.grey[600]!,
           labelColor: Colors.grey[900]!,
@@ -27,8 +28,6 @@ class MyApp extends StatelessWidget {
         ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
-          filled: true,
-          fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(
@@ -43,8 +42,8 @@ class MyApp extends StatelessWidget {
           ),
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(
-              color: Colors.grey,
+            borderSide: BorderSide(
+              color: Colors.grey[300]!,
             ),
           ),
           focusedErrorBorder: OutlineInputBorder(
