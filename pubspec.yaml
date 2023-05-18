@@ -1,6 +1,6 @@
 name: adaptive_selector
 description: A Flutter package that creates adaptive selectors for all platforms with customizable features and built-in functionalities.
-version: 1.0.1
+version: 1.0.1+1
 homepage: https://github.com/lvxduck/adaptive_selector
 
 environment:
