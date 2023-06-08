@@ -73,6 +73,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.bottomSheetBuilder,
     this.menuBehavior = HitTestBehavior.opaque,
     this.menuBuilder,
+    this.controller,
   })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
         assert(
           !(isMultiple == false && initial != null && initial.length > 1),
@@ -192,6 +193,10 @@ class AdaptiveSelector<T> extends StatefulWidget {
   /// Default to [HitTestBehavior.opaque]
   final HitTestBehavior menuBehavior;
 
+  /// Controls the selected options of selector.
+  /// If null, this widget will create its own AdaptiveSelectorController.
+  final AdaptiveSelectorController<T>? controller;
+
   /// The data from the closest instance of this class that encloses the given
   /// context.
   ///
@@ -211,12 +216,13 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   bool isSelected(AdaptiveSelectorOption<T> option) =>
       controller.selectedOptions.contains(option);
 
-  late final controller = AdaptiveSelectorController<T>(
-    options: widget.options ?? [],
-    selectedOptions: [...?widget.initial],
-    isMultiple: widget.isMultiple,
-    allowClear: widget.allowClear,
-  );
+  late final controller = widget.controller ??
+      AdaptiveSelectorController<T>(
+        options: widget.options ?? [],
+        selectedOptions: [...?widget.initial],
+        isMultiple: widget.isMultiple,
+        allowClear: widget.allowClear,
+      );
 
   void handleTextChange(String value) {
     if (widget.onSearch == null) return;
@@ -241,11 +247,13 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   @override
   void didUpdateWidget(covariant AdaptiveSelector<T> oldWidget) {
-    controller.update(
-      options: widget.options ?? [],
-      isMultiple: widget.isMultiple,
-      allowClear: widget.allowClear,
-    );
+    if (widget.controller != null) {
+      controller.update(
+        options: widget.options ?? [],
+        isMultiple: widget.isMultiple,
+        allowClear: widget.allowClear,
+      );
+    }
     super.didUpdateWidget(oldWidget);
   }
 
