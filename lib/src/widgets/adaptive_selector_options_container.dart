@@ -15,9 +15,11 @@ class AdaptiveSelectorOptionsWidget<T> extends StatelessWidget {
 
   AdaptiveSelectorController<T> get controller => selector.controller;
 
+  bool get _hasMoreData => selector.widget.hasMoreData;
+
   bool handleScrollNotification(ScrollNotification notification) {
     if (notification is ScrollEndNotification) {
-      if (notification.metrics.extentAfter == 0 && controller.hasMore) {
+      if (notification.metrics.extentAfter == 0 && _hasMoreData) {
         if (selector.widget.onLoadMore != null) {
           controller.guardFuture(() => selector.widget.onLoadMore!.call());
         }
@@ -44,7 +46,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatelessWidget {
                       selector.widget.type == SelectorType.bottomSheet
                           ? ScrollViewKeyboardDismissBehavior.onDrag
                           : ScrollViewKeyboardDismissBehavior.manual,
-                  itemCount: options.length + (controller.hasMore ? 1 : 0),
+                  itemCount: options.length + (_hasMoreData ? 1 : 0),
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   itemBuilder: (context, index) {
                     if (index == options.length) {
@@ -80,7 +82,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatelessWidget {
                       ),
                     ),
                   )
-            else if (controller.loading)
+            else if (selector.widget.loading)
               selector.widget.loadingBuilder?.call(context) ??
                   const ColoredBox(
                     color: Colors.white38,
@@ -88,7 +90,7 @@ class AdaptiveSelectorOptionsWidget<T> extends StatelessWidget {
                       child: CircularProgressIndicator(),
                     ),
                   )
-            else if (!controller.loading && options.isEmpty)
+            else if (!selector.widget.loading && options.isEmpty)
               selector.widget.emptyDataBuilder?.call(context) ??
                   const SizedBox(
                     height: 100,

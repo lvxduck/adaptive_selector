@@ -214,9 +214,8 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   late final controller = AdaptiveSelectorController<T>(
     options: widget.options ?? [],
     selectedOptions: [...?widget.initial],
-    loading: false,
-    hasMore: widget.hasMoreData,
     isMultiple: widget.isMultiple,
+    allowClear: widget.allowClear,
   );
 
   void handleTextChange(String value) {
@@ -244,9 +243,8 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
   void didUpdateWidget(covariant AdaptiveSelector<T> oldWidget) {
     controller.update(
       options: widget.options ?? [],
-      loading: widget.loading,
-      hasMore: widget.hasMoreData,
       isMultiple: widget.isMultiple,
+      allowClear: widget.allowClear,
     );
     super.didUpdateWidget(oldWidget);
   }

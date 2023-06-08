@@ -6,9 +6,8 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
   AdaptiveSelectorController({
     required this.options,
     required List<AdaptiveSelectorOption<T>> selectedOptions,
-    required this.loading,
-    required this.hasMore,
     required this.isMultiple,
+    required this.allowClear,
   }) {
     selectedOptionsNotifier = ValueNotifier(selectedOptions);
   }
@@ -19,10 +18,9 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
   List<AdaptiveSelectorOption<T>> get selectedOptions =>
       selectedOptionsNotifier.value;
 
-  bool loading;
   Object? error;
-  bool hasMore;
   bool isMultiple;
+  bool allowClear;
 
   void selectOption(AdaptiveSelectorOption<T> option) {
     var options = selectedOptionsNotifier.value;
@@ -34,7 +32,13 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
     if (isMultiple) {
       selectedOptionsNotifier.value = options;
     } else {
-      selectedOptionsNotifier.value = options.isEmpty ? [] : [options.last];
+      if (options.isEmpty) {
+        if (allowClear) {
+          selectedOptionsNotifier.value = [];
+        }
+      } else {
+        selectedOptionsNotifier.value = [options.last];
+      }
     }
     notifyListeners();
   }
@@ -46,14 +50,12 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
 
   void update({
     required List<AdaptiveSelectorOption<T>> options,
-    required bool loading,
-    required bool hasMore,
     required bool isMultiple,
+    required bool allowClear,
   }) {
     this.options = options;
-    this.loading = loading;
-    this.hasMore = hasMore;
     this.isMultiple = isMultiple;
+    this.allowClear = allowClear;
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
         notifyListeners();
