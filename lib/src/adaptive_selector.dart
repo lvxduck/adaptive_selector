@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -73,6 +74,7 @@ class AdaptiveSelector<T> extends StatefulWidget {
     this.bottomSheetBuilder,
     this.menuBehavior = HitTestBehavior.opaque,
     this.menuBuilder,
+    this.value,
   })  : assert(bottomSheetSize <= 1.0 && bottomSheetSize >= 0),
         assert(
           !(isMultiple == false && initial != null && initial.length > 1),
@@ -92,6 +94,11 @@ class AdaptiveSelector<T> extends StatefulWidget {
   ///
   /// Defaults to null.
   final List<AdaptiveSelectorOption<T>>? initial;
+
+  /// Determine the current selected option
+  ///
+  /// Defaults to null.
+  final List<AdaptiveSelectorOption<T>>? value;
 
   /// The list of options the user can select.
   final List<AdaptiveSelectorOption<T>>? options;
@@ -213,7 +220,7 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
 
   late final controller = AdaptiveSelectorController<T>(
     options: widget.options ?? [],
-    selectedOptions: [...?widget.initial],
+    selectedOptions: [...?(widget.initial ?? widget.value)],
     isMultiple: widget.isMultiple,
     allowClear: widget.allowClear,
   );
@@ -239,13 +246,24 @@ class AdaptiveSelectorState<T> extends State<AdaptiveSelector<T>> {
     super.initState();
   }
 
+  final listEquality = const ListEquality();
+
   @override
   void didUpdateWidget(covariant AdaptiveSelector<T> oldWidget) {
-    controller.update(
-      options: widget.options ?? [],
-      isMultiple: widget.isMultiple,
-      allowClear: widget.allowClear,
-    );
+    if (listEquality.equals(widget.value, oldWidget.value)) {
+      controller.update(
+        options: widget.options ?? [],
+        isMultiple: widget.isMultiple,
+        allowClear: widget.allowClear,
+      );
+    } else {
+      controller.update(
+        options: widget.options ?? [],
+        isMultiple: widget.isMultiple,
+        allowClear: widget.allowClear,
+        selectedOptions: widget.value,
+      );
+    }
     super.didUpdateWidget(oldWidget);
   }
 

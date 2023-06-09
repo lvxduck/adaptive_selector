@@ -50,6 +50,7 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
 
   void update({
     required List<AdaptiveSelectorOption<T>> options,
+    List<AdaptiveSelectorOption<T>>? selectedOptions,
     required bool isMultiple,
     required bool allowClear,
   }) {
@@ -59,6 +60,9 @@ class AdaptiveSelectorController<T> extends ChangeNotifier {
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
         notifyListeners();
+        if (selectedOptions != null) {
+          selectedOptionsNotifier.value = selectedOptions;
+        }
       },
     );
   }
