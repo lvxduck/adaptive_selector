@@ -1,3 +1,8 @@
+## 1.0.2
+* Enhance options container
+* Allow custom UI
+* Fix allowClear prop not working
+
 ## 1.0.1
 * Fix disable multiple selector not working
 * Auto update textField when close menu selector
