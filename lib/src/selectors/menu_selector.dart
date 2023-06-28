@@ -68,6 +68,9 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
     this.minWidth,
   });
 
+  late final position = menuContext.findRelativeRect()!;
+  late final textFieldSize = menuContext.findSize()!;
+
   @override
   Iterable<OverlayEntry> createOverlayEntries() {
     return <OverlayEntry>[
@@ -93,8 +96,8 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
             delegate: _PopupMenuRouteLayout(
               context: context,
               selectorContext: menuContext,
-              position: menuContext.findRelativeRect(),
-              textFieldSize: menuContext.findSize(),
+              position: position,
+              textFieldSize: textFieldSize,
               minWidth: minWidth,
             ),
             child: child,
@@ -133,8 +136,14 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
     final maxHeight = constraints.minHeight - keyBoardHeight - totalSafeArea;
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      position = selectorContext.findRelativeRect();
-      textFieldSize = selectorContext.findSize();
+      final rect = selectorContext.findRelativeRect();
+      if (rect != null) {
+        position = rect;
+      }
+      final size = selectorContext.findSize();
+      if (size != null) {
+        textFieldSize = size;
+      }
     });
     // todo: calculate size when minWidth too large
     return BoxConstraints.loose(

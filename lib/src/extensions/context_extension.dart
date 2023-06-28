@@ -1,13 +1,17 @@
 import 'package:flutter/cupertino.dart';
 
 extension ContextExtension on BuildContext {
-  Size findSize() {
-    final textFieldRenderBox = findRenderObject() as RenderBox;
-    return textFieldRenderBox.size;
+  Size? findSize() {
+    if (!mounted) return null;
+    final textFieldRenderBox = findRenderObject() as RenderBox?;
+    return textFieldRenderBox?.size;
   }
 
-  RelativeRect findRelativeRect() {
-    var overlay = Overlay.of(this).context.findRenderObject() as RenderBox;
+  RelativeRect? findRelativeRect() {
+    if (!mounted) return null;
+    var overlay =
+        Overlay.maybeOf(this)?.context.findRenderObject() as RenderBox?;
+    if (overlay == null) return null;
     final textFieldRenderBox = findRenderObject() as RenderBox;
     return RelativeRect.fromSize(
       Rect.fromPoints(
