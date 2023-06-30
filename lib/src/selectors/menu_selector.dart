@@ -38,7 +38,6 @@ class MenuSelector<T> extends StatelessWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxHeight: selector.widget.maxMenuHeight,
-        minWidth: 320,
       ),
       child: selector.widget.menuBuilder?.call(context, options, selector) ??
           Material(
@@ -89,12 +88,16 @@ class _OverlayMenuRoute<T> extends OverlayRoute<T> {
       OverlayEntry(
         maintainState: true,
         builder: (context) {
+          late final position = menuContext.findRelativeRect();
+          late final textFieldSize = menuContext.findSize();
+          if (position == null || textFieldSize == null) {
+            return const SizedBox();
+          }
           return CustomSingleChildLayout(
             delegate: _PopupMenuRouteLayout(
               context: context,
-              selectorContext: menuContext,
-              position: menuContext.findRelativeRect(),
-              textFieldSize: menuContext.findSize(),
+              position: position,
+              textFieldSize: textFieldSize,
               minWidth: minWidth,
             ),
             child: child,
@@ -110,14 +113,12 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
   // Rectangle of underlying button, relative to the overlay's dimensions.
   RelativeRect position;
   final BuildContext context;
-  final BuildContext selectorContext;
 
   Size textFieldSize;
   final double? minWidth;
 
   _PopupMenuRouteLayout({
     required this.context,
-    required this.selectorContext,
     required this.position,
     required this.textFieldSize,
     this.minWidth,
@@ -125,21 +126,15 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
 
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
-    final parentRenderBox = context.findRenderObject() as RenderBox;
     final keyBoardHeight = MediaQuery.of(context).viewInsets.bottom;
     final safeAreaTop = MediaQuery.of(context).padding.top;
     final safeAreaBottom = MediaQuery.of(context).padding.bottom;
     final totalSafeArea = safeAreaTop + safeAreaBottom;
     final maxHeight = constraints.minHeight - keyBoardHeight - totalSafeArea;
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      position = selectorContext.findRelativeRect();
-      textFieldSize = selectorContext.findSize();
-    });
     // todo: calculate size when minWidth too large
     return BoxConstraints.loose(
       Size(
-        minWidth ?? parentRenderBox.size.width - position.right - position.left,
+        minWidth ?? textFieldSize.width,
         maxHeight,
       ),
     );
@@ -166,7 +161,6 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
       x -= (minWidth! - textFieldSize.width) / 2;
       if (x < 0) x = position.left;
     }
-
     return Offset(x, y);
   }
 

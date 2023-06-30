@@ -16,7 +16,9 @@ class AdaptiveSelectorTile<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        selector.handleTapOption(option);
+        if (selector.mounted) {
+          selector.handleTapOption(option);
+        }
       },
       child: Container(
         height: 46,
